@@ -12,7 +12,17 @@
       </footer>
     </div>
     <form action="#" class="search-bar">
-      <input type="text" placeholder="Поиск..." aria-label="Поиск по сайту">
+      <div class="file-input-wrapper">
+        <input 
+          type="file" 
+          id="file-upload"
+          accept=".pdf,.doc,.docx,.txt" 
+          aria-label="Загрузить файл"
+        >
+        <label for="file-upload" class="file-input-label">
+          <span class="placeholder-text">Загрузите файл...</span>
+        </label>
+      </div>
       <button type="submit" aria-label="Найти">
         <i class='bx bx-search'></i>
       </button>
@@ -78,26 +88,47 @@ export default {
   transition: all 0.4s ease;
 }
 
-.search-bar input {
+.file-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.file-input-wrapper input[type="file"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-input-label {
+  display: block;
   width: 100%;
   padding: clamp(12px, 1.2vw, 18px) clamp(15px, 1.5vw, 25px);
   font-size: clamp(0.9em, 1.1vw, 1.2em);
-  border: 2px solid #3a4036;
+  border: 2px solid #394038;
   border-radius: 30px;
-  outline: none;
-  background-color: #3a4036;
+  background-color: #394038;
   color: #f3f8f1;
-  transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder-text {
+  color: #f3f8f1;
 }
 
 .search-bar button {
   width: clamp(60px, 7vw, 80px);
   font-size: clamp(0.9em, 1.1vw, 1.2em);
-  border: 2px solid #3a4036;
+  border: 2px solid #394038;
   border-radius: 30px;
   outline: none;
-  background-color: #3a4036;
+  background-color: #394038;
   color: #f3f8f1;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .5);
@@ -119,7 +150,7 @@ export default {
 
 .social-links i {
   font-size: clamp(1.3rem, 2vw, 2rem);
-  color: #3a4036;
+  color: #394038;
   transition: all 0.3s ease;
 }
 
@@ -186,4 +217,33 @@ export default {
     min-width: min(40vw, 550px);
   }
 }
+.dark-theme .intro h1,
+.dark-theme .intro p {
+  color: #f3f8f1;
+}
+
+.dark-theme .social-links i {
+  color: #f3f8f1;
+}
+
+.dark-theme .file-input-label {
+  background-color: #f3f8f1;
+  border-color: #f3f8f1;
+  color: #394038;
+}
+
+.dark-theme .placeholder-text {
+  color: #394038;
+}
+
+.dark-theme .search-bar button {
+  background-color: #f3f8f1;
+  border-color: #f3f8f1;
+  color: #394038;
+}
+
+.dark-theme .search-bar button:hover {
+  background-color: #e0e8dc;
+}
+
 </style>

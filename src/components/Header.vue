@@ -1,10 +1,23 @@
 <template>
   <header>
-    <h2 class="logo"><img src="../assets/images/Logo3.png" alt="Логотип"></h2>
+    <h2 class="logo"><img 
+        v-show="!isDarkTheme"
+        src="../assets/images/Logo.png" 
+        alt="Логотип светлой темы"
+        class="logo-image"
+      >
+      <img 
+        v-show="isDarkTheme"
+        src="../assets/images/Logo2.png" 
+        alt="Логотип темной темы"
+        class="logo-image"
+      ></h2>
     <nav class="navigation">
       <a href="#">Главная</a>
       <a href="#">Личный кабинет</a>
-      <a href="#">Тема</a>
+      <button class="theme-toggle" @click="toggleTheme">
+        <i :class="themeIcon"></i>
+      </button>
       <button class="btnLogin-popup" @click="handleAuthClick">
         Авторизация/Регистрация
       </button>
@@ -18,6 +31,16 @@
 <script>
 export default {
   name: 'AppHeader',
+  data() {
+    return {
+      isDarkTheme: false
+    }
+  },
+  computed: {
+    themeIcon() {
+      return this.isDarkTheme ? 'bx bx-sun' : 'bx bx-moon'
+    }
+  },
   methods: {
     handleAuthClick() {
       this.$emit('open-auth');
@@ -25,6 +48,11 @@ export default {
     toggleMobileMenu() {
       const nav = document.querySelector('.navigation');
       nav.classList.toggle('active');
+    },
+    toggleTheme() {
+      this.isDarkTheme = !this.isDarkTheme;
+      document.documentElement.classList.toggle('dark-theme', this.isDarkTheme);
+      this.$emit('theme-changed', this.isDarkTheme);
     }
   }
 }
@@ -61,7 +89,7 @@ img {
 .navigation a {
   position: relative;
   font-size: clamp(0.9em, 1.1vw, 1.1em);
-  color: #3a4036;
+  color: #394038;
   text-decoration: none;
   font-weight: 500;
   margin-left: clamp(15px, 2vw, 40px);
@@ -87,6 +115,23 @@ img {
   transform: scaleX(1);
 }
 
+.theme-toggle {
+  background: transparent;
+  border: none;
+  font-size: clamp(1.2em, 1.5vw, 1.5em);
+  color: #394038;
+  cursor: pointer;
+  margin-left: clamp(15px, 2vw, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
 .navigation .btnLogin-popup {
   width: clamp(150px, 16vw, 250px);
   height: clamp(45px, 5vw, 60px);
@@ -99,7 +144,7 @@ img {
   font-weight: 500;
   margin-left: clamp(15px, 2vw, 40px);
   transition: all 0.3s ease;
-  color: #3a4036;
+  color: #394038;
 }
 
 .navigation .btnLogin-popup:hover {
@@ -111,7 +156,7 @@ img {
   background: none;
   border: none;
   font-size: 1.8em;
-  color: #3a4036;
+  color: #394038;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -120,6 +165,11 @@ img {
   .navigation a {
     margin-left: clamp(10px, 1.5vw, 20px);
     font-size: 0.95em;
+  }
+  
+  .theme-toggle {
+    font-size: 1.3em;
+    margin-left: clamp(10px, 1.5vw, 20px);
   }
   
   .navigation .btnLogin-popup {
@@ -156,6 +206,11 @@ img {
     font-size: 1.2em;
   }
   
+  .theme-toggle {
+    margin: 15px 0;
+    font-size: 1.5em;
+  }
+  
   .navigation .btnLogin-popup {
     margin: 20px 0 0;
     width: 200px;
@@ -185,4 +240,67 @@ img {
     height: calc(100vh - 70px);
   }
 }
+
+.dark-theme header {
+  background-color: #394038;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  transition: all 0.4s ease;
+}
+
+.dark-theme .navigation a {
+  color: #f3f8f1;
+  transition: all 0.3s ease;
+}
+
+.dark-theme .navigation a::after {
+  background: #f3f8f1;
+  transform-origin: right;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.dark-theme .navigation a:hover::after {
+  transform-origin: left;
+  transform: scaleX(1);
+}
+
+.dark-theme .theme-toggle {
+  color: #f3f8f1;
+  transition: all 0.3s ease;
+}
+
+.dark-theme .theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+.dark-theme .btnLogin-popup {
+  border-color: #f3f8f1;
+  color: #f3f8f1;
+  transition: all 0.3s ease;
+}
+
+.dark-theme .btnLogin-popup:hover {
+  background: #f3f8f1;
+  color: #394038;
+}
+
+.dark-theme .mobile-menu-btn {
+  color: #f3f8f1;
+  transition: all 0.3s ease;
+}
+
+.dark-theme .navigation {
+  background: rgba(57, 64, 56, 0.95);
+  transition: all 0.4s ease;
+}
+
+.dark-theme .navigation.active {
+  background-color: #394038;
+  transition: left 0.4s ease;
+}
+
+.dark-theme img {
+  transition: width 0.3s ease;
+}
+
 </style>

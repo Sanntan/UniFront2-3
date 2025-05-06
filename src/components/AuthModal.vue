@@ -14,8 +14,11 @@
         </div>
         <div class="input-box">
           <span class="icon"><i class="bx bx-lock-alt"></i></span>
-          <input type="password" v-model="loginForm.password" required>
+          <input :type="showLoginPassword ? 'text' : 'password'" v-model="loginForm.password" required>
           <label>Пароль</label>
+          <span class="icon-eye" @click="showLoginPassword = !showLoginPassword">
+            <i :class="showLoginPassword ? 'bx bx-show' : 'bx bx-hide'"></i>
+          </span>
         </div>
         <div class="remember-forgot">
           <label><input type="checkbox" v-model="loginForm.remember"> Запомнить меня</label>
@@ -43,8 +46,19 @@
         </div>
         <div class="input-box">
           <span class="icon"><i class="bx bx-lock-alt"></i></span>
-          <input type="password" v-model="registerForm.password" required>
+          <input :type="showRegisterPassword ? 'text' : 'password'" v-model="registerForm.password" required>
           <label>Пароль</label>
+          <span class="icon-eye" @click="showRegisterPassword = !showRegisterPassword">
+            <i :class="showRegisterPassword ? 'bx bx-show' : 'bx bx-hide'"></i>
+          </span>
+        </div>
+        <div class="input-box">
+          <span class="icon"><i class="bx bx-lock-alt"></i></span>
+          <input :type="showConfirmPassword ? 'text' : 'password'" v-model="registerForm.confirmPassword" required>
+          <label>Подтвердите пароль</label>
+          <span class="icon-eye" @click="showConfirmPassword = !showConfirmPassword">
+            <i :class="showConfirmPassword ? 'bx bx-show' : 'bx bx-hide'"></i>
+          </span>
         </div>
         <button type="submit" class="btn">Зарегистрироваться</button>
         <div class="login-register">
@@ -67,6 +81,9 @@ export default {
   data() {
     return {
       isRegister: false,
+      showLoginPassword: false,
+      showRegisterPassword: false,
+      showConfirmPassword: false,
       loginForm: {
         email: '',
         password: '',
@@ -75,7 +92,8 @@ export default {
       registerForm: {
         username: '',
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
       }
     }
   },
@@ -95,11 +113,37 @@ export default {
       console.log('Login data:', this.loginForm)
       this.closeModal()
     },
-    handleRegister() {
-      console.log('Register data:', this.registerForm)
-      this.isRegister = false
-      this.closeModal()
+    async handleRegister() {
+    if (this.registerForm.password !== this.registerForm.confirmPassword) {
+      alert('Пароли не совпадают!');
+      return;
     }
+
+    try {
+      const response = await fetch('http://your-api.com/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: this.registerForm.username,
+          email: this.registerForm.email,
+          password: this.registerForm.password
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        this.$emit('register-success');
+        this.closeModal();
+      } else {
+        throw new Error(data.message || 'Ошибка регистрации');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert(error.message);
+    }
+  }
   }
 }
 </script>
@@ -129,7 +173,7 @@ export default {
 }
 
 .wrapper.active {
-  height: 520px;
+  height: 600px;
 }
 
 .wrapper .form-box {
@@ -166,7 +210,7 @@ export default {
   right: 0;
   width: 45px;
   height: 45px;
-  background: #3a4036;
+  background: #394038;
   font-size: 1.5em;
   color: #f3f8f1;
   display: flex;
@@ -179,7 +223,7 @@ export default {
 .form-box h2 {
   background: #f3f8f1;
   font-size: 2em;
-  color: #3a4036;
+  color: #394038;
   text-align: center;
   font-weight: bold;
 }
@@ -200,7 +244,7 @@ export default {
   left: 5px;
   transform: translateY(-50%);
   font-size: 1em;
-  color:#3a4036;
+  color:#394038;
   font-weight: 500;
   pointer-events: none;
   transition: .5s;
@@ -218,24 +262,34 @@ export default {
   border: none;
   outline: none;
   font-size: 1em;
-  color: #3a4036;
+  color: #394038;
   font-weight: 600;
   padding: 0 35px 0 5px;
 }
 
 .input-box .icon {
   position: absolute;
-  right: 8px;
+  right: 30px;
   font-size: 1.2em;
-  color:#3a4036;
+  color:#394038;
   line-height: 57px;
   background: transparent;
+}
+
+.input-box .icon-eye {
+  position: absolute;
+  right: 8px;
+  font-size: 1.2em;
+  color:#394038;
+  line-height: 57px;
+  background: transparent;
+  cursor: pointer;
 }
 
 .remember-forgot {
   background: #f3f8f1;
   font-size: .9em;
-  color: #3a4036;
+  color: #394038;
   font-size: 500;
   margin: -15px 0 15px;
   display: flex;
@@ -243,13 +297,13 @@ export default {
 }
 
 .remember-forgot label input {
-  accent-color: #3a4036;
+  accent-color: #394038;
   margin-right: 3px;
 }
 
 .remember-forgot a {
   background: #f3f8f1;
-  color:#3a4036;
+  color:#394038;
   text-decoration: none;
 }
 
@@ -260,7 +314,7 @@ export default {
 .btn {
   width: 100%;
   height: 45px;
-  background: #3a4036;
+  background: #394038;
   border: none;
   outline: none;
   border-radius: 30px;
@@ -272,14 +326,14 @@ export default {
 
 .login-register {
   font-size: .9em;
-  color: #3a4036;
+  color: #394038;
   text-align: center;
   font-weight: 500;
   margin: 25px 0 10px;
 }
 
 .login-register p a {
-  color: #3a4036;
+  color: #394038;
   text-decoration: none;
   font-weight: 600;
 }
@@ -290,5 +344,62 @@ export default {
 
 .login-register p, .login-register p a {
   background: #f3f8f1;
+}
+
+
+.dark-theme .wrapper {
+  border-color: #99aa8e;
+  background: #99aa8e;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+}
+
+.dark-theme .wrapper .form-box {
+  background: #99aa8e;
+}
+
+.dark-theme .form-box h2 {
+  background: #99aa8e;
+  color: #161a15;
+}
+
+.dark-theme .input-box {
+  background: #99aa8e;
+  border-bottom-color: #161a15;
+}
+
+.dark-theme .input-box label {
+  background: #99aa8e;
+  color: #161a15;
+}
+
+.dark-theme .input-box input {
+  color: #161a15;
+}
+
+.dark-theme .input-box .icon,
+.dark-theme .input-box .icon-eye {
+  color: #161a15;
+}
+
+.dark-theme .remember-forgot,
+.dark-theme .remember-forgot a {
+  color: #161a15;
+  background: #99aa8e;
+}
+
+.dark-theme .btn {
+  background: #394038;
+  color: #f3f8f1;
+}
+
+.dark-theme .login-register p,
+.dark-theme .login-register p a {
+  color: #161a15;
+  background: #99aa8e;
+}
+
+.dark-theme .icon-close {
+  background: #394038;
+  color: #f3f8f1;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
-  <div id="app">
-    <Header @open-auth="showAuthModal = true" />
+  <div id="app" :class="{ 'dark-theme': isDarkTheme }">
+    <Header @open-auth="showAuthModal = true" @theme-changed="toggleTheme" />
     <MainContent />
     <AuthModal 
       :show="showAuthModal"
@@ -22,7 +22,14 @@ export default {
   },
   data() {
     return {
-      showAuthModal: false
+      showAuthModal: false,
+      isDarkTheme: false
+    }
+  },
+  methods: {
+    toggleTheme() {
+      this.isDarkTheme = !this.isDarkTheme;
+      document.documentElement.classList.toggle('dark-theme', this.isDarkTheme);
     }
   }
 }
@@ -44,6 +51,12 @@ body {
   background-color: #c6dab7; 
   background: url('./assets/images/Fon.png') no-repeat center center fixed;
   background-size: cover;
+}
+.dark-theme body {
+  background-color: #3a4036;
+  background: url('./assets/images/Fon2.png') no-repeat center center fixed;
+  background-size: cover;
+  color: #f0f0f0;
 }
 </style>
 
