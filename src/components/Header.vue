@@ -1,6 +1,7 @@
 <template>
   <header>
-    <h2 class="logo"><img 
+    <h2 class="logo">
+      <img 
         v-show="!isDarkTheme"
         src="../assets/images/Logo.png" 
         alt="Логотип светлой темы"
@@ -11,10 +12,11 @@
         src="../assets/images/Logo2.png" 
         alt="Логотип темной темы"
         class="logo-image"
-      ></h2>
+      >
+    </h2>
     <nav class="navigation">
-      <a href="#">Главная</a>
-      <a href="#">Личный кабинет</a>
+      <router-link to="/">Главная</router-link>
+      <router-link to="/cabinet">Личный кабинет</router-link>
       <button class="theme-toggle" @click="toggleTheme">
         <i :class="themeIcon"></i>
       </button>

@@ -1,7 +1,7 @@
 <template>
   <div id="app" :class="{ 'dark-theme': isDarkTheme }">
     <Header @open-auth="showAuthModal = true" @theme-changed="toggleTheme" />
-    <MainContent />
+    <router-view></router-view>
     <AuthModal 
       :show="showAuthModal"
       @close="showAuthModal = false"
@@ -11,13 +11,11 @@
 
 <script>
 import Header from './components/Header.vue'
-import MainContent from './components/MainContent.vue'
 import AuthModal from './components/AuthModal.vue'
 
 export default {
   components: {
     Header,
-    MainContent,
     AuthModal
   },
   data() {
