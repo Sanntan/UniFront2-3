@@ -41,9 +41,14 @@
   <script>
   import FavoritesSection from './FavoritesSection.vue'
   import ProfileSection from './ProfileSection.vue'
-  
+  import { useAuth0 } from '@auth0/auth0-vue'
+
   export default {
     name: 'PersonalCabinet',
+    setup() {
+    const { user } = useAuth0()
+    return { user }
+    },
     components: {
       FavoritesSection,
       ProfileSection

@@ -25,6 +25,20 @@
           <a href="#">Забыли пароль?</a>
         </div>
         <button type="submit" class="btn">Вход</button>
+        <div class="social-login">
+          <p>Или войти через:</p>
+          <div class="social-icons">
+            <a href="#" @click.prevent="loginWithGitHub" class="social-icon github">
+              <i class="bx bxl-github"></i>
+            </a>
+            <a href="#" @click.prevent="loginWithVK" class="social-icon vk">
+              <i class="bx bxl-vk"></i>
+            </a>
+            <a href="#" @click.prevent="loginWithGoogle" class="social-icon google">
+              <i class="bx bxl-google"></i>
+            </a>
+          </div>
+        </div>
         <div class="login-register">
           <p>Создать аккаунт? <a href="#" @click.prevent="toggleForm">Регистрация</a></p>
         </div>
@@ -61,6 +75,20 @@
           </span>
         </div>
         <button type="submit" class="btn">Зарегистрироваться</button>
+        <div class="social-login">
+          <p>Или зарегистрироваться через:</p>
+          <div class="social-icons">
+            <a href="#" @click.prevent="loginWithGitHub" class="social-icon github">
+              <i class="bx bxl-github"></i>
+            </a>
+            <a href="#" @click.prevent="loginWithVK" class="social-icon vk">
+              <i class="bx bxl-vk"></i>
+            </a>
+            <a href="#" @click.prevent="loginWithGoogle" class="social-icon google">
+              <i class="bx bxl-google"></i>
+            </a>
+          </div>
+        </div>
         <div class="login-register">
           <p>Уже есть аккаунт? <a href="#" @click.prevent="toggleForm">Авторизация</a></p>
         </div>
@@ -70,12 +98,28 @@
 </template>
 
 <script>
+import { useAuth0 } from '@auth0/auth0-vue'
 export default {
   name: 'AuthModal',
   props: {
     show: {
       type: Boolean,
       default: false
+    }
+  },
+  setup() {
+    const { 
+      loginWithRedirect,
+      loginWithPopup,
+      buildAuthorizeUrl,
+      logout 
+    } = useAuth0()
+
+    return { 
+      loginWithRedirect,
+      loginWithPopup,
+      buildAuthorizeUrl,
+      logout
     }
   },
   data() {
@@ -109,41 +153,40 @@ export default {
     closeModal() {
       this.$emit('close')
     },
-    handleLogin() {
-      console.log('Login data:', this.loginForm)
-      this.closeModal()
+    async handleLogin() {
+      try {
+        await this.loginWithRedirect({
+          appState: { 
+            returnTo: '/cabinet'
+          },
+          authorizationParams: {
+            prompt: 'login', 
+            login_hint: this.loginForm.email 
+          }
+        })
+      } catch (error) {
+        console.error('Ошибка входа:', error)
+        alert('Не удалось войти. Попробуйте ещё раз.')
+      }
+    },
+    async handleLogin() {
+      await this.loginWithRedirect({
+        appState: { returnTo: '/cabinet' },
+        authorizationParams: {
+          prompt: 'login',
+          login_hint: this.loginForm.email
+        }
+      })
     },
     async handleRegister() {
-    if (this.registerForm.password !== this.registerForm.confirmPassword) {
-      alert('Пароли не совпадают!');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://your-api.com/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: this.registerForm.username,
-          email: this.registerForm.email,
-          password: this.registerForm.password
-        })
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        this.$emit('register-success');
-        this.closeModal();
-      } else {
-        throw new Error(data.message || 'Ошибка регистрации');
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      alert(error.message);
-    }
-  }
+      await this.loginWithRedirect({
+        appState: { returnTo: '/cabinet' },
+        authorizationParams: {
+          screen_hint: 'signup',
+          login_hint: this.registerForm.email
+        }
+      })
+    }  
   }
 }
 </script>
@@ -155,7 +198,7 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%) scale(0);
   width: 400px;
-  height: 440px;
+  height: 520px;
   border: 2px solid #f3f8f1;
   border-radius: 30px;
   background: #f3f8f1;
@@ -173,7 +216,7 @@ export default {
 }
 
 .wrapper.active {
-  height: 600px;
+  height: 680px; 
 }
 
 .wrapper .form-box {
@@ -220,6 +263,7 @@ export default {
   cursor: pointer;
   z-index: 1;
 }
+
 .form-box h2 {
   background: #f3f8f1;
   font-size: 2em;
@@ -322,7 +366,61 @@ export default {
   font-size: 1em;
   color: #f3f8f1;
   font-weight: 500;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  transform: scale(1);
 } 
+
+.btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.social-login {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.social-login p {
+  color: #394038;
+  margin-bottom: 15px;
+  background: #f3f8f1;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.2rem;
+  text-decoration: none;
+  transition: transform 0.3s;
+}
+
+.social-icon:hover {
+  transform: scale(1.1);
+}
+
+.social-icon.github {
+  background: #333;
+}
+
+.social-icon.vk {
+  background: #4a76a8;
+}
+
+.social-icon.google {
+  background: #db4437;
+}
 
 .login-register {
   font-size: .9em;
@@ -336,16 +434,18 @@ export default {
   color: #394038;
   text-decoration: none;
   font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-block;
 }
 
 .login-register p a:hover {
   text-decoration: underline;
+  transform: scale(1.03);
 }
 
 .login-register p, .login-register p a {
   background: #f3f8f1;
 }
-
 
 .dark-theme .wrapper {
   border-color: #99aa8e;
@@ -392,6 +492,10 @@ export default {
   color: #f3f8f1;
 }
 
+.dark-theme .btn:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
 .dark-theme .login-register p,
 .dark-theme .login-register p a {
   color: #161a15;
@@ -401,5 +505,10 @@ export default {
 .dark-theme .icon-close {
   background: #394038;
   color: #f3f8f1;
+}
+
+.dark-theme .social-login p {
+  color: #161a15;
+  background: #99aa8e;
 }
 </style>

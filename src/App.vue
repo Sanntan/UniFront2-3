@@ -5,6 +5,7 @@
     <AuthModal 
       :show="showAuthModal"
       @close="showAuthModal = false"
+      @login-success="handleLoginSuccess"
     />
   </div>
 </template>
@@ -28,6 +29,9 @@ export default {
     toggleTheme() {
       this.isDarkTheme = !this.isDarkTheme;
       document.documentElement.classList.toggle('dark-theme', this.isDarkTheme);
+    },
+    handleLoginSuccess() {
+      this.$router.push('/cabinet');
     }
   }
 }

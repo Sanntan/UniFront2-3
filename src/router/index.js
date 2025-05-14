@@ -11,13 +11,22 @@ const routes = [
   {
     path: '/cabinet',
     name: 'PersonalCabinet',
-    component: PersonalCabinet
+    component: PersonalCabinet,
+    meta: { requiresAuth: true }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/') 
+  } else {
+    next()
+  }
 })
 
 export default router

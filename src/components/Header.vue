@@ -16,7 +16,12 @@
     </h2>
     <nav class="navigation">
       <router-link to="/">Главная</router-link>
-      <router-link to="/cabinet">Личный кабинет</router-link>
+      <a href="#" 
+         class="nav-link" 
+         @click.prevent="navigateToCabinet"
+         :class="{ 'active': $route.path === '/cabinet' }">
+        Личный кабинет
+      </a>
       <button class="theme-toggle" @click="toggleTheme">
         <i :class="themeIcon"></i>
       </button>
@@ -31,8 +36,13 @@
 </template>
 
 <script>
+import { useAuth0 } from '@auth0/auth0-vue'
 export default {
   name: 'AppHeader',
+  setup() {
+    const { isAuthenticated, loginWithRedirect, logout } = useAuth0()
+    return { isAuthenticated, loginWithRedirect, logout }
+  },
   data() {
     return {
       isDarkTheme: false
@@ -45,7 +55,11 @@ export default {
   },
   methods: {
     handleAuthClick() {
-      this.$emit('open-auth');
+      if (this.isAuthenticated) {
+        logoutMock()
+      } else {
+        this.$emit('open-auth');
+      }
     },
     toggleMobileMenu() {
       const nav = document.querySelector('.navigation');
@@ -55,6 +69,13 @@ export default {
       this.isDarkTheme = !this.isDarkTheme;
       document.documentElement.classList.toggle('dark-theme', this.isDarkTheme);
       this.$emit('theme-changed', this.isDarkTheme);
+    },
+    navigateToCabinet() {
+      if (this.isAuthenticated) {
+        this.$router.push('/cabinet') 
+      } else {
+        this.$emit('open-auth')
+      }
     }
   }
 }
