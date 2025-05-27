@@ -145,17 +145,28 @@ export default {
     closeModal() {
       this.$emit('close')
     },
-    handleLogin() {
-      // Проверка только для admin@gmail.com / 1234
-      if (this.loginForm.email === 'admin@gmail.com' && this.loginForm.password === '1234') {
-        localStorage.setItem('isAuthenticated', 'true')
-        this.loginError = ''
-        this.$emit('login-success')
-        this.closeModal()
-        // Если надо перезагрузить страницу для обновления состояния:
-        // window.location.reload()
-      } else {
-        this.loginError = 'Неверный email или пароль'
+    async handleLogin() {
+      try {
+        const res = await fetch('http://localhost:8000/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: this.loginForm.email,
+            password: this.loginForm.password
+          })
+        })
+        const data = await res.json()
+        if (data.success) {
+          localStorage.setItem('isAuthenticated', 'true')
+          localStorage.setItem('user', JSON.stringify(data.user))
+          this.loginError = ''
+          this.$emit('login-success')
+          this.closeModal()
+        } else {
+          this.loginError = data.message || 'Неверный email или пароль'
+        }
+      } catch (err) {
+        this.loginError = 'Ошибка соединения с сервером'
       }
     },
     handleRegister() {
