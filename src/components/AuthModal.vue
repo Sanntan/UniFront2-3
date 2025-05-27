@@ -4,6 +4,7 @@
       <i class="bx bx-x"></i>
     </span>
 
+    <!-- Login Form -->
     <div class="form-box login">
       <h2>Авторизация</h2>
       <form @submit.prevent="handleLogin">
@@ -25,6 +26,7 @@
           <a href="#">Забыли пароль?</a>
         </div>
         <button type="submit" class="btn">Вход</button>
+        <p v-if="loginError" class="error">{{ loginError }}</p>
         <div class="social-login">
           <p>Или войти через:</p>
           <div class="social-icons">
@@ -45,6 +47,7 @@
       </form>
     </div>
 
+    <!-- Register Form -->
     <div class="form-box register">
       <h2>Регистрация</h2>
       <form @submit.prevent="handleRegister">
@@ -75,6 +78,7 @@
           </span>
         </div>
         <button type="submit" class="btn">Зарегистрироваться</button>
+        <p v-if="registerError" class="error">{{ registerError }}</p>
         <div class="social-login">
           <p>Или зарегистрироваться через:</p>
           <div class="social-icons">
@@ -98,7 +102,6 @@
 </template>
 
 <script>
-import { useAuth0 } from '@auth0/auth0-vue'
 export default {
   name: 'AuthModal',
   props: {
@@ -107,27 +110,14 @@ export default {
       default: false
     }
   },
-  setup() {
-    const { 
-      loginWithRedirect,
-      loginWithPopup,
-      buildAuthorizeUrl,
-      logout 
-    } = useAuth0()
-
-    return { 
-      loginWithRedirect,
-      loginWithPopup,
-      buildAuthorizeUrl,
-      logout
-    }
-  },
   data() {
     return {
       isRegister: false,
       showLoginPassword: false,
       showRegisterPassword: false,
       showConfirmPassword: false,
+      loginError: '',
+      registerError: '',
       loginForm: {
         email: '',
         password: '',
@@ -149,44 +139,46 @@ export default {
   methods: {
     toggleForm() {
       this.isRegister = !this.isRegister
+      this.loginError = ''
+      this.registerError = ''
     },
     closeModal() {
       this.$emit('close')
     },
-    async handleLogin() {
-      try {
-        await this.loginWithRedirect({
-          appState: { 
-            returnTo: '/cabinet'
-          },
-          authorizationParams: {
-            prompt: 'login', 
-            login_hint: this.loginForm.email 
-          }
-        })
-      } catch (error) {
-        console.error('Ошибка входа:', error)
-        alert('Не удалось войти. Попробуйте ещё раз.')
+    handleLogin() {
+      // Проверка только для admin@gmail.com / 1234
+      if (this.loginForm.email === 'admin@gmail.com' && this.loginForm.password === '1234') {
+        localStorage.setItem('isAuthenticated', 'true')
+        this.loginError = ''
+        this.$emit('login-success')
+        this.closeModal()
+        // Если надо перезагрузить страницу для обновления состояния:
+        // window.location.reload()
+      } else {
+        this.loginError = 'Неверный email или пароль'
       }
     },
-    async handleLogin() {
-      await this.loginWithRedirect({
-        appState: { returnTo: '/cabinet' },
-        authorizationParams: {
-          prompt: 'login',
-          login_hint: this.loginForm.email
-        }
-      })
+    handleRegister() {
+      // Проверяем совпадение паролей
+      if (this.registerForm.password !== this.registerForm.confirmPassword) {
+        this.registerError = 'Пароли не совпадают'
+        return
+      }
+      // Простейшая регистрация для вида
+      this.registerError = ''
+      this.isRegister = false
+      // Можно показать сообщение "Зарегистрировано" — по желанию
     },
-    async handleRegister() {
-      await this.loginWithRedirect({
-        appState: { returnTo: '/cabinet' },
-        authorizationParams: {
-          screen_hint: 'signup',
-          login_hint: this.registerForm.email
-        }
-      })
-    }  
+    // Заглушки для соц. сетей
+    loginWithGitHub() {
+      alert('OAuth авторизация отключена')
+    },
+    loginWithVK() {
+      alert('OAuth авторизация отключена')
+    },
+    loginWithGoogle() {
+      alert('OAuth авторизация отключена')
+    }
   }
 }
 </script>
@@ -511,4 +503,6 @@ export default {
   color: #161a15;
   background: #99aa8e;
 }
+
+.error { color: red; margin-top: 10px; }
 </style>

@@ -38,67 +38,63 @@
     </div>
   </template>
   
-  <script>
-  import FavoritesSection from './FavoritesSection.vue'
-  import ProfileSection from './ProfileSection.vue'
-  import { useAuth0 } from '@auth0/auth0-vue'
+ <script>
+import FavoritesSection from './FavoritesSection.vue'
+import ProfileSection from './ProfileSection.vue'
 
-  export default {
-    name: 'PersonalCabinet',
-    setup() {
-    const { user } = useAuth0()
-    return { user }
-    },
-    components: {
-      FavoritesSection,
-      ProfileSection
-    },
-    data() {
-      return {
-        isDarkTheme: false,
-        activeTab: 'favorites',
-        tabs: [
-          { id: 'favorites', name: 'Избранное', icon: 'bx bx-bookmark-heart' },
-          { id: 'profile', name: 'Профиль', icon: 'bx bx-user-circle' }
-        ],
-        favorites: [
-          {
-            title: "Название 1",
-            authors: ["Автор 1", "Автор 2"],
-            abstract: "Введение...",
-            journal: "Журнал 1",
-            year: "год",
-            tags: ["тег 1", "тег 2"]
-          },
-          {
-            title: "Название 2",
-            authors: ["Автор 1", "Автор 2"],
-            abstract: "Введение...",
-            journal: "Журнал 2",
-            year: "год",
-            tags: ["тег 3", "тег 2"]
-          }
-        ]
-      }
-    },
-    methods: {
-      removeFavorite(index) {
-        this.favorites.splice(index, 1);
-      },
-      checkTheme() {
-        this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
-      }
-    },
-    mounted() {
-      this.checkTheme();
-      const themeObserver = new MutationObserver(this.checkTheme);
-      themeObserver.observe(document.documentElement, { 
-        attributes: true, 
-        attributeFilter: ['class'] 
-      });
+export default {
+  name: 'PersonalCabinet',
+  components: {
+    FavoritesSection,
+    ProfileSection
+  },
+  data() {
+    return {
+      isDarkTheme: false,
+      activeTab: 'favorites',
+      tabs: [
+        { id: 'favorites', name: 'Избранное', icon: 'bx bx-bookmark-heart' },
+        { id: 'profile', name: 'Профиль', icon: 'bx bx-user-circle' }
+      ],
+      favorites: [
+        {
+          title: "Название 1",
+          authors: ["Автор 1", "Автор 2"],
+          abstract: "Введение...",
+          journal: "Журнал 1",
+          year: "год",
+          tags: ["тег 1", "тег 2"]
+        },
+        {
+          title: "Название 2",
+          authors: ["Автор 1", "Автор 2"],
+          abstract: "Введение...",
+          journal: "Журнал 2",
+          year: "год",
+          tags: ["тег 3", "тег 2"]
+        }
+      ]
     }
+  },
+  methods: {
+    removeFavorite(index) {
+      this.favorites.splice(index, 1);
+    },
+    checkTheme() {
+      this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
+    }
+  },
+  mounted() {
+    this.checkTheme();
+    const themeObserver = new MutationObserver(this.checkTheme);
+    themeObserver.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ['class'] 
+    });
   }
-  </script>
+}
+</script>
+
   
   <style scoped>
   .personal-cabinet {

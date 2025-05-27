@@ -26,7 +26,7 @@
         <i :class="themeIcon"></i>
       </button>
       <button class="btnLogin-popup" @click="handleAuthClick">
-        Авторизация/Регистрация
+        {{ isAuthenticated ? 'Выйти' : 'Авторизация/Регистрация' }}
       </button>
     </nav>
     <button class="mobile-menu-btn" @click="toggleMobileMenu">
@@ -36,19 +36,18 @@
 </template>
 
 <script>
-import { useAuth0 } from '@auth0/auth0-vue'
 export default {
   name: 'AppHeader',
-  setup() {
-    const { isAuthenticated, loginWithRedirect, logout } = useAuth0()
-    return { isAuthenticated, loginWithRedirect, logout }
-  },
   data() {
     return {
       isDarkTheme: false
     }
   },
   computed: {
+    isAuthenticated() {
+      // всегда проверяет актуальное значение
+      return localStorage.getItem('isAuthenticated') === 'true'
+    },
     themeIcon() {
       return this.isDarkTheme ? 'bx bx-sun' : 'bx bx-moon'
     }
@@ -56,10 +55,14 @@ export default {
   methods: {
     handleAuthClick() {
       if (this.isAuthenticated) {
-        logoutMock()
+        this.logoutMock();
       } else {
         this.$emit('open-auth');
       }
+    },
+    logoutMock() {
+      localStorage.removeItem('isAuthenticated');
+      this.$router.push('/');
     },
     toggleMobileMenu() {
       const nav = document.querySelector('.navigation');
@@ -72,14 +75,17 @@ export default {
     },
     navigateToCabinet() {
       if (this.isAuthenticated) {
-        this.$router.push('/cabinet') 
+        // Дебаг — выведем в консоль
+        console.log('Переход в кабинет!');
+        this.$router.push('/cabinet');
       } else {
-        this.$emit('open-auth')
+        this.$emit('open-auth');
       }
     }
   }
 }
 </script>
+
 
 <style scoped>
 header {

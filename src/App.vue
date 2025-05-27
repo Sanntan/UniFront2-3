@@ -1,7 +1,7 @@
 <template>
   <div id="app" :class="{ 'dark-theme': isDarkTheme }">
     <Header @open-auth="showAuthModal = true" @theme-changed="toggleTheme" />
-    <router-view></router-view>
+    <router-view />
     <AuthModal 
       :show="showAuthModal"
       @close="showAuthModal = false"
