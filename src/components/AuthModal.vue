@@ -23,7 +23,7 @@
         </div>
         <div class="remember-forgot">
           <label><input type="checkbox" v-model="loginForm.remember"> Запомнить меня</label>
-          <a href="#">Забыли пароль?</a>
+          <a href="#" v-show="false">Забыли пароль?</a>
         </div>
         <button type="submit" class="btn">Вход</button>
         <p v-if="loginError" class="error">{{ loginError }}</p>
@@ -32,12 +32,6 @@
           <div class="social-icons">
             <a href="#" @click.prevent="loginWithGitHub" class="social-icon github">
               <i class="bx bxl-github"></i>
-            </a>
-            <a href="#" @click.prevent="loginWithVK" class="social-icon vk">
-              <i class="bx bxl-vk"></i>
-            </a>
-            <a href="#" @click.prevent="loginWithGoogle" class="social-icon google">
-              <i class="bx bxl-google"></i>
             </a>
           </div>
         </div>
@@ -89,12 +83,6 @@
           <div class="social-icons">
             <a href="#" @click.prevent="loginWithGitHub" class="social-icon github">
               <i class="bx bxl-github"></i>
-            </a>
-            <a href="#" @click.prevent="loginWithVK" class="social-icon vk">
-              <i class="bx bxl-vk"></i>
-            </a>
-            <a href="#" @click.prevent="loginWithGoogle" class="social-icon google">
-              <i class="bx bxl-google"></i>
             </a>
           </div>
         </div>
@@ -215,12 +203,6 @@ export default {
     loginWithGitHub() {
       alert('OAuth авторизация отключена')
     },
-    loginWithVK() {
-      alert('OAuth авторизация отключена')
-    },
-    loginWithGoogle() {
-      alert('OAuth авторизация отключена')
-    }
   }
 }
 </script>

@@ -11,8 +11,9 @@
         </div>
       </footer>
     </div>
-    <form action="#" class="search-bar">
-      <div class="file-input-wrapper">
+    <form action="#" class="search-bar search-bar-column">
+      <!-- Dropzone для файла -->
+      <div class="file-input-wrapper file-hover-transition">
         <input 
           type="file" 
           id="file-upload"
@@ -23,18 +24,47 @@
           <span class="placeholder-text">Загрузите файл...</span>
         </label>
       </div>
-      <button type="submit" aria-label="Найти">
-        <i class='bx bx-search'></i>
-      </button>
+      <!-- Поле для текста -->
+      <div class="file-input-wrapper text-input-wrapper file-hover-transition">
+        <input
+          type="text"
+          class="file-input-label"
+          placeholder="Введите текст"
+          style="background: #fff; color: #394038; border: 2px solid #394038;"
+        >
+      </div>
     </form>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'MainContent'
+  name: 'MainContent',
+  data() {
+    return {
+      inputText: '',
+      fileName: ''
+    }
+  },
+  methods: {
+    triggerFileInput() {
+      this.$refs.fileInput && this.$refs.fileInput.click();
+    },
+    handleFileChange(e) {
+      const file = e.target.files[0];
+      if (file) this.fileName = file.name;
+    },
+    handleDrop(e) {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        this.fileName = files[0].name;
+        // Если нужно сразу записать файл, сохрани его как this.droppedFile = files[0]
+      }
+    }
+  }
 }
 </script>
+
 
 <style scoped>
 .content-container {
@@ -102,6 +132,8 @@ export default {
 }
 
 .file-input-label {
+  min-height: 56px;
+  box-sizing: border-box;
   display: block;
   width: 100%;
   padding: clamp(12px, 1.2vw, 18px) clamp(15px, 1.5vw, 25px);
@@ -181,9 +213,10 @@ export default {
     font-size: 0.9em;
   }
   
-  .search-bar {
+  .search-bar, .search-bar-column{
     flex-direction: column;
-    margin-top: 0;
+    gap: 24px;
+    align-items: stretch;
   }
   
   .search-bar button {
@@ -244,6 +277,14 @@ export default {
 
 .dark-theme .search-bar button:hover {
   background-color: #e0e8dc;
+}
+
+.file-hover-transition .file-input-label:hover,
+.file-hover-transition .file-input-label:focus-within {
+  border-color: #99aa8e;
+  box-shadow: 0 4px 16px rgba(57,64,56,0.09);
+  transform: scale(1.03);
+  z-index: 2;
 }
 
 </style>
