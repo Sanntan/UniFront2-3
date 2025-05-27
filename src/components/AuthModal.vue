@@ -157,11 +157,12 @@ export default {
         })
         const data = await res.json()
         if (data.success) {
-          localStorage.setItem('isAuthenticated', 'true')
-          localStorage.setItem('user', JSON.stringify(data.user))
+          sessionStorage.setItem('isAuthenticated', 'true')
+          sessionStorage.setItem('user', JSON.stringify(data.user))
           this.loginError = ''
           this.$emit('login-success')
           this.closeModal()
+          window.dispatchEvent(new Event('auth-changed'));
         } else {
           this.loginError = data.message || 'Неверный email или пароль'
         }

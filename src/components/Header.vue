@@ -40,13 +40,13 @@ export default {
   name: 'AppHeader',
   data() {
     return {
-      isDarkTheme: false
+      isDarkTheme: false,
+      authKey: 0, // ключ для форс-обновления
     }
   },
   computed: {
     isAuthenticated() {
-      // всегда проверяет актуальное значение
-      return localStorage.getItem('isAuthenticated') === 'true'
+      return sessionStorage.getItem('isAuthenticated') === 'true'
     },
     themeIcon() {
       return this.isDarkTheme ? 'bx bx-sun' : 'bx bx-moon'
@@ -61,8 +61,10 @@ export default {
       }
     },
     logoutMock() {
-      localStorage.removeItem('isAuthenticated');
+      sessionStorage.removeItem('isAuthenticated');
+      sessionStorage.removeItem('user');
       this.$router.push('/');
+      window.dispatchEvent(new Event('auth-changed'));
     },
     toggleMobileMenu() {
       const nav = document.querySelector('.navigation');
@@ -75,17 +77,25 @@ export default {
     },
     navigateToCabinet() {
       if (this.isAuthenticated) {
-        // Дебаг — выведем в консоль
-        console.log('Переход в кабинет!');
         this.$router.push('/cabinet');
       } else {
         this.$emit('open-auth');
       }
+    },
+    forceAuthUpdate() {
+      // Меняем ключ, чтобы компонент перерисовался
+      this.authKey++;
     }
+  },
+  created() {
+    // слушаем глобальное событие на логин
+    window.addEventListener('auth-changed', this.forceAuthUpdate);
+  },
+  beforeUnmount() {
+    window.removeEventListener('auth-changed', this.forceAuthUpdate);
   }
 }
 </script>
-
 
 <style scoped>
 header {

@@ -1,6 +1,6 @@
 <template>
   <div id="app" :class="{ 'dark-theme': isDarkTheme }">
-    <Header @open-auth="showAuthModal = true" @theme-changed="toggleTheme" />
+    <Header @open-auth="showAuthModal = true" @theme-changed="toggleTheme" :key="headerKey" />
     <router-view />
     <AuthModal 
       :show="showAuthModal"
@@ -22,7 +22,8 @@ export default {
   data() {
     return {
       showAuthModal: false,
-      isDarkTheme: false
+      isDarkTheme: false,
+      headerKey: 0
     }
   },
   methods: {
@@ -31,11 +32,27 @@ export default {
       document.documentElement.classList.toggle('dark-theme', this.isDarkTheme);
     },
     handleLoginSuccess() {
+      this.showAuthModal = false;
+      sessionStorage.setItem('isAuthenticated', 'true');
+      window.dispatchEvent(new Event('auth-changed'));
       this.$router.push('/cabinet');
+    },
+    updateHeaderKey() {
+      this.headerKey++;
     }
+  },
+  mounted() {
+    sessionStorage.removeItem('isAuthenticated');
+    sessionStorage.removeItem('user');
+    window.addEventListener('auth-changed', this.updateHeaderKey);
+  },
+  beforeUnmount() {
+    window.removeEventListener('auth-changed', this.updateHeaderKey);
   }
 }
 </script>
+
+
 
 <style>
 * {
