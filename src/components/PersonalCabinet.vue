@@ -70,7 +70,7 @@ export default {
       this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
     },
     async fetchUserData() {
-      const userData = JSON.parse(localStorage.getItem('user'));
+      const userData = JSON.parse(sessionStorage.getItem('user'));
       if (!userData) return;
       try {
         const res = await fetch(`http://localhost:8000/api/user/${userData.user_id}`);
@@ -81,7 +81,7 @@ export default {
       } catch (e) {
         // Можно показать ошибку
       }
-    }
+    },
   },
   mounted() {
     this.checkTheme();

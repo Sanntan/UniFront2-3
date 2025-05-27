@@ -59,7 +59,7 @@ export default {
   },
   methods: {
     async saveProfile() {
-      const userData = JSON.parse(localStorage.getItem('user'));
+      const userData = JSON.parse(sessionStorage.getItem('user'));
       try {
         const res = await fetch(`http://localhost:8000/api/user/${userData.user_id}`, {
           method: 'PUT',
@@ -71,6 +71,9 @@ export default {
         const data = await res.json();
         if (data.success) {
           this.saveMessage = "Изменения профиля сохранены";
+          // Обновим user в sessionStorage
+          userData.name = this.userData.name;
+          sessionStorage.setItem('user', JSON.stringify(userData));
           this.$emit('profile-saved');
         } else {
           this.saveMessage = "Ошибка сохранения профиля";

@@ -53,8 +53,13 @@
       <form @submit.prevent="handleRegister">
         <div class="input-box">
           <span class="icon"><i class="bx bx-user"></i></span>
-          <input type="text" v-model="registerForm.username" required>
-          <label>Имя пользователя</label>
+          <input type="text" v-model="registerForm.firstName" required>
+          <label>Имя</label>
+        </div>
+        <div class="input-box">
+          <span class="icon"><i class="bx bx-user"></i></span>
+          <input type="text" v-model="registerForm.lastName" required>
+          <label>Фамилия</label>
         </div>
         <div class="input-box">
           <span class="icon"><i class="bx bx-envelope"></i></span>
@@ -124,7 +129,8 @@ export default {
         remember: false
       },
       registerForm: {
-        username: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -170,16 +176,40 @@ export default {
         this.loginError = 'Ошибка соединения с сервером'
       }
     },
-    handleRegister() {
-      // Проверяем совпадение паролей
-      if (this.registerForm.password !== this.registerForm.confirmPassword) {
-        this.registerError = 'Пароли не совпадают'
-        return
+    async handleRegister() {
+      // Простая валидация
+      if (
+        !this.registerForm.firstName.trim() ||
+        !this.registerForm.lastName.trim() ||
+        !this.registerForm.email.trim() ||
+        !this.registerForm.password ||
+        this.registerForm.password !== this.registerForm.confirmPassword
+      ) {
+        this.registerError = "Проверьте корректность всех полей и совпадение паролей";
+        return;
       }
-      // Простейшая регистрация для вида
-      this.registerError = ''
-      this.isRegister = false
-      // Можно показать сообщение "Зарегистрировано" — по желанию
+      try {
+        const res = await fetch('http://localhost:8000/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            first_name: this.registerForm.firstName,
+            last_name: this.registerForm.lastName,
+            email: this.registerForm.email,
+            password: this.registerForm.password
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.$emit('close');
+          alert('Успешная регистрация! Теперь вы можете войти.');
+          // this.toggleForm(); // если хочешь сразу показать форму логина
+        } else {
+          this.registerError = data.message || 'Ошибка регистрации';
+        }
+      } catch (err) {
+        this.registerError = "Ошибка соединения с сервером";
+      }
     },
     // Заглушки для соц. сетей
     loginWithGitHub() {
@@ -202,7 +232,7 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%) scale(0);
   width: 400px;
-  height: 520px;
+  height: 670px;   /* было 520px, стало 670px (+150) */
   border: 2px solid #f3f8f1;
   border-radius: 30px;
   background: #f3f8f1;
@@ -220,7 +250,7 @@ export default {
 }
 
 .wrapper.active {
-  height: 680px; 
+  height: 830px;
 }
 
 .wrapper .form-box {
