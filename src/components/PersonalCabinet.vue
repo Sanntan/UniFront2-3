@@ -1,44 +1,43 @@
 <template>
-    <div class="personal-cabinet" :class="{ 'dark-theme': isDarkTheme }">
-      <div class="cabinet-container">
-        <aside class="sidebar">
-          <div class="user-profile">
-            <div class="avatar">
-              <i class='bx bx-user'></i>
-            </div>
-            <h2>Имя Пользователя</h2>
-            <p>email@example.com</p>
+  <div class="personal-cabinet" :class="{ 'dark-theme': isDarkTheme }">
+    <div class="cabinet-container">
+      <aside class="sidebar">
+        <div class="user-profile">
+          <div class="avatar">
+            <i class='bx bx-user'></i>
           </div>
-          
-          <nav class="cabinet-nav">
-            <button 
-              v-for="tab in tabs" 
-              :key="tab.id"
-              :class="{ active: activeTab === tab.id }"
-              @click="activeTab = tab.id"
-            >
-              <i :class="tab.icon"></i>
-              {{ tab.name }}
-            </button>
-          </nav>
-        </aside>
-  
-        <main class="cabinet-content">
-          <FavoritesSection 
-            v-if="activeTab === 'favorites'"
-            :favorites="favorites"
-            @remove-favorite="removeFavorite"
-          />
-          
-          <ProfileSection 
-            v-if="activeTab === 'profile'"
-          />
-        </main>
-      </div>
+          <h2>{{ user.name }}</h2>
+          <p>{{ user.email }}</p>
+        </div>
+        <nav class="cabinet-nav">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            :class="{ active: activeTab === tab.id }"
+            @click="activeTab = tab.id"
+          >
+            <i :class="tab.icon"></i>
+            {{ tab.name }}
+          </button>
+        </nav>
+      </aside>
+      <main class="cabinet-content">
+        <FavoritesSection
+          v-if="activeTab === 'favorites'"
+          :favorites="favorites"
+          @remove-favorite="removeFavorite"
+        />
+        <ProfileSection
+          v-if="activeTab === 'profile'"
+          :user="user"
+          @profile-saved="fetchUserData"
+        />
+      </main>
     </div>
-  </template>
-  
- <script>
+  </div>
+</template>
+
+<script>
 import FavoritesSection from './FavoritesSection.vue'
 import ProfileSection from './ProfileSection.vue'
 
@@ -56,24 +55,11 @@ export default {
         { id: 'favorites', name: 'Избранное', icon: 'bx bx-bookmark-heart' },
         { id: 'profile', name: 'Профиль', icon: 'bx bx-user-circle' }
       ],
-      favorites: [
-        {
-          title: "Название 1",
-          authors: ["Автор 1", "Автор 2"],
-          abstract: "Введение...",
-          journal: "Журнал 1",
-          year: "год",
-          tags: ["тег 1", "тег 2"]
-        },
-        {
-          title: "Название 2",
-          authors: ["Автор 1", "Автор 2"],
-          abstract: "Введение...",
-          journal: "Журнал 2",
-          year: "год",
-          tags: ["тег 3", "тег 2"]
-        }
-      ]
+      favorites: [],
+      user: {
+        name: '',
+        email: ''
+      }
     }
   },
   methods: {
@@ -82,19 +68,32 @@ export default {
     },
     checkTheme() {
       this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
+    },
+    async fetchUserData() {
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (!userData) return;
+      try {
+        const res = await fetch(`http://localhost:8000/api/user/${userData.user_id}`);
+        const data = await res.json();
+        if (data.success) {
+          this.user = data.user;
+        }
+      } catch (e) {
+        // Можно показать ошибку
+      }
     }
   },
   mounted() {
     this.checkTheme();
     const themeObserver = new MutationObserver(this.checkTheme);
-    themeObserver.observe(document.documentElement, { 
-      attributes: true, 
-      attributeFilter: ['class'] 
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
     });
+    this.fetchUserData();
   }
 }
 </script>
-
   
   <style scoped>
   .personal-cabinet {

@@ -1,85 +1,88 @@
 <template>
-    <section class="profile-section">      
-      <div class="profile-form">
-        <div class="form-group">
-          <label>Имя</label>
-          <input 
-            type="text" 
-            v-model="userData.name" 
-            placeholder="Имя"
-          >
-        </div>
-        
-        <div class="form-group">
-          <label>Email</label>
-          <input 
-            type="email" 
-            v-model="userData.email" 
-            placeholder="email"
-          >
-        </div>
-        
-        <div class="form-group">
-          <label>Научные интересы</label>
-          <div class="interests">
-            <span 
-              v-for="(interest, index) in userData.interests" 
-              :key="index" 
-              class="interest-tag"
-            >
-              {{ interest }}
-              <button @click="removeInterest(index)" class="remove-interest">
-                <i class='bx bx-x'></i>
-              </button>
-            </span>
-            <input 
-              type="text" 
-              v-model="newInterest" 
-              placeholder="Добавить интерес"
-              @keyup.enter="addInterest"
-            >
-          </div>
-        </div>
-        
-        <div class="form-actions">
-          <button class="save-btn" @click="saveProfile">
-            <i class='bx bx-save'></i> Сохранить изменения
-          </button>
-        </div>
+  <section class="profile-section">
+    <div class="profile-form">
+      <div class="form-group">
+        <label>Имя</label>
+        <input
+          type="text"
+          v-model="userData.name"
+          placeholder="Имя"
+        >
       </div>
-    </section>
-  </template>
-  
-  <script>
-  export default {
-    name: 'ProfileSection',
-    data() {
-      return {
-        userData: {
-          name: "Имя",
-          email: "email@example.com",
-          interests: ["Интерес 1", "Интерес 2"]
-        },
-        newInterest: ""
-      }
-    },
-    methods: {
-      addInterest() {
-        if (this.newInterest.trim() && !this.userData.interests.includes(this.newInterest.trim())) {
-          this.userData.interests.push(this.newInterest.trim());
-          this.newInterest = "";
+      <div class="form-group">
+        <label>Email</label>
+        <input
+          type="email"
+          v-model="userData.email"
+          placeholder="email"
+          disabled
+        >
+      </div>
+      <div class="form-actions">
+        <button class="save-btn" @click="saveProfile">
+          <i class='bx bx-save'></i> Сохранить изменения
+        </button>
+      </div>
+      <p v-if="saveMessage" style="color: green; margin-top: 10px;">{{ saveMessage }}</p>
+    </div>
+  </section>
+</template>
+
+<script>
+export default {
+  name: 'ProfileSection',
+  props: {
+    user: {
+      type: Object,
+      required: true
+    }
+  },
+  data() {
+    return {
+      userData: {
+        name: this.user.name || '',
+        email: this.user.email || ''
+      },
+      saveMessage: ''
+    }
+  },
+  watch: {
+    user: {
+      handler(newVal) {
+        this.userData = {
+          name: newVal.name || '',
+          email: newVal.email || ''
         }
       },
-      removeInterest(index) {
-        this.userData.interests.splice(index, 1);
-      },
-      saveProfile() {
-        alert("Изменения профиля сохранены");
-        //...
+      deep: true
+    }
+  },
+  methods: {
+    async saveProfile() {
+      const userData = JSON.parse(localStorage.getItem('user'));
+      try {
+        const res = await fetch(`http://localhost:8000/api/user/${userData.user_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: this.userData.name
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.saveMessage = "Изменения профиля сохранены";
+          this.$emit('profile-saved');
+        } else {
+          this.saveMessage = "Ошибка сохранения профиля";
+        }
+      } catch (err) {
+        this.saveMessage = "Ошибка соединения с сервером";
       }
+      setTimeout(() => { this.saveMessage = ""; }, 2000);
     }
   }
-  </script>
+}
+</script>
   
   <style scoped>
   .profile-section {
