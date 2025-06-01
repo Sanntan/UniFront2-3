@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from login import router as login_router
 from user import router as user_router
 from register import router as register_router
+from similarity import router as similarity_router
 
 app = FastAPI()
 
@@ -17,3 +18,4 @@ app.add_middleware(
 app.include_router(login_router)
 app.include_router(user_router)
 app.include_router(register_router)
+app.include_router(similarity_router)

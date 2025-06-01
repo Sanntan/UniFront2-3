@@ -34,15 +34,23 @@
             class="file-input-label"
             placeholder="Введите текст"
             v-model="inputText"
+            @keydown.enter.prevent="handleTextSubmit"
             style="background: #fff; color: #394038; border: 2px solid #394038;"
           >
         </div>
+
       </form>
 
+      <!-- 🔄 Прогресс-бар -->
+      <div v-if="isProcessing" class="progress-wrapper">
+        <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+      </div>
+
+      <!-- ✅ Результаты -->
       <div v-if="showResults" class="results-container">
         <div
           class="article-card"
-          v-for="(article, index) in dummyResults"
+          v-for="(article, index) in results"
           :key="index"
         >
           <h3>{{ article.title }}</h3>
@@ -65,33 +73,9 @@ export default {
       inputText: '',
       fileName: '',
       showResults: false,
-      dummyResults: [
-        {
-          title: 'Анализ факторов устойчивости экосистем',
-          authors: 'Иванов И.И., Петров П.П.',
-          article_url: '#'
-        },
-        {
-          title: 'Инновационные подходы к обработке данных',
-          authors: 'Сидоров А.А., Кузнецова Л.Л.',
-          article_url: '#'
-        },
-        {
-          title: 'Моделирование информационных потоков в науке',
-          authors: 'Орлова И.В.',
-          article_url: '#'
-        },
-        {
-          title: 'Эволюция методов машинного обучения',
-          authors: 'Дмитриев М.С.',
-          article_url: '#'
-        },
-        {
-          title: 'Методы кластеризации научных статей',
-          authors: 'Фёдоров В.Г., Чернова О.Н.',
-          article_url: '#'
-        }
-      ]
+      results: [],
+      progress: 0,
+      isProcessing: false,
     };
   },
   watch: {
@@ -100,11 +84,88 @@ export default {
     }
   },
   methods: {
-  handleFileChange(e) {
+    async handleFileChange(e) {
       const file = e.target.files[0];
-      if (file) {
-        this.fileName = file.name;
+      if (!file) return;
+
+      this.fileName = file.name;
+      this.showResults = false;
+      this.results = [];
+      this.progress = 0;
+      this.isProcessing = true;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Имитация прогресса
+      const interval = setInterval(() => {
+        if (this.progress < 90) {
+          this.progress += Math.random() * 5;
+        }
+      }, 150);
+
+      try {
+        const response = await fetch("http://localhost:8000/find_similar", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Ошибка запроса");
+
+        const data = await response.json();
+        this.results = data;
         this.showResults = true;
+      } catch (err) {
+        console.error("Ошибка при получении похожих статей:", err);
+        this.results = [];
+      } finally {
+        clearInterval(interval);
+        this.progress = 100;
+        setTimeout(() => {
+          this.isProcessing = false;
+          this.progress = 0;
+        }, 800);
+      }
+    },
+    async handleTextSubmit() {
+      if (!this.inputText.trim()) return;
+
+      this.fileName = '';
+      this.showResults = false;
+      this.results = [];
+      this.progress = 0;
+      this.isProcessing = true;
+
+      const formData = new FormData();
+      formData.append("text", this.inputText.trim());
+
+      const interval = setInterval(() => {
+        if (this.progress < 90) {
+          this.progress += Math.random() * 5;
+        }
+      }, 150);
+
+      try {
+        const response = await fetch("http://localhost:8000/find_similar_text", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Ошибка запроса");
+
+        const data = await response.json();
+        this.results = data;
+        this.showResults = true;
+      } catch (err) {
+        console.error("Ошибка при поиске по тексту:", err);
+        this.results = [];
+      } finally {
+        clearInterval(interval);
+        this.progress = 100;
+        setTimeout(() => {
+          this.isProcessing = false;
+          this.progress = 0;
+        }, 800);
       }
     },
     handleAddToFavorites() {
@@ -343,9 +404,11 @@ export default {
 .results-container {
   margin-top: 40px;
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
   width: 100%;
-  max-width: 800px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .article-card {
@@ -382,6 +445,55 @@ export default {
 
 .favorite-button:hover {
   background: #4c5549;
+}
+
+.dark-theme .article-card {
+  background: #394038;
+  border-color: #f3f8f1;
+  color: #f3f8f1;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+}
+
+.dark-theme .article-card a {
+  color: #e0e8dc;
+  text-decoration: underline;
+}
+
+.dark-theme .favorite-button {
+  background: #f3f8f1;
+  color: #394038;
+  box-shadow: 0 2px 6px rgba(255,255,255,0.3);
+}
+
+.dark-theme .favorite-button:hover {
+  background: #e0e8dc;
+}
+
+.progress-wrapper {
+  width: 100%;
+  max-width: 650px;
+  height: 12px;
+  border-radius: 30px;
+  background-color: #c7d7bd;
+  overflow: hidden;
+  margin: 20px 0;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #394038;
+  transition: width 0.3s ease;
+}
+
+.dark-theme .progress-wrapper {
+  background-color: #4a5347;
+  box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme .progress-bar {
+  background-color: #f3f8f1;
 }
 
 </style>
