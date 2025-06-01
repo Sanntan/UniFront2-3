@@ -109,7 +109,7 @@ header {
   align-items: center;
   z-index: 99;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
-  background-color: #c7d7bd;
+  background-color: #ffffff;
   transition: all 0.4s ease;
 }
 
@@ -128,7 +128,7 @@ img {
 .navigation a {
   position: relative;
   font-size: clamp(0.9em, 1.1vw, 1.1em);
-  color: #394038;
+  color: #141414;
   text-decoration: none;
   font-weight: 500;
   margin-left: clamp(15px, 2vw, 40px);
@@ -142,7 +142,7 @@ img {
   bottom: -6px;
   width: 100%;
   height: 3px;
-  background: #f3f8f1;
+  background: #000000;
   border-radius: 30px;
   transform-origin: right;
   transform: scaleX(0);
@@ -158,7 +158,7 @@ img {
   background: transparent;
   border: none;
   font-size: clamp(1.2em, 1.5vw, 1.5em);
-  color: #394038;
+  color: #141414;
   cursor: pointer;
   margin-left: clamp(15px, 2vw, 40px);
   display: flex;
@@ -175,7 +175,7 @@ img {
   width: clamp(150px, 16vw, 250px);
   height: clamp(45px, 5vw, 60px);
   background: transparent;
-  border: 3px solid #f3f8f1;
+  border: 2px solid #000000;
   outline: none;
   border-radius: 30px;
   cursor: pointer;
@@ -183,7 +183,7 @@ img {
   font-weight: 500;
   margin-left: clamp(15px, 2vw, 40px);
   transition: all 0.3s ease;
-  color: #394038;
+  color: #141414;
 }
 
 .navigation .btnLogin-popup:hover {
@@ -195,7 +195,7 @@ img {
   background: none;
   border: none;
   font-size: 1.8em;
-  color: #394038;
+  color: #141414;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -281,7 +281,7 @@ img {
 }
 
 .dark-theme header {
-  background-color: #394038;
+  background-color: #141414;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   transition: all 0.4s ease;
 }
@@ -320,7 +320,7 @@ img {
 
 .dark-theme .btnLogin-popup:hover {
   background: #f3f8f1;
-  color: #394038;
+  color: #141414;
 }
 
 .dark-theme .mobile-menu-btn {
@@ -329,12 +329,12 @@ img {
 }
 
 .dark-theme .navigation {
-  background: rgba(57, 64, 56, 0.95);
+  background: #141414;
   transition: all 0.4s ease;
 }
 
 .dark-theme .navigation.active {
-  background-color: #394038;
+  background-color: #141414;
   transition: left 0.4s ease;
 }
 

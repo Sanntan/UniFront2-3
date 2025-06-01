@@ -296,9 +296,9 @@ export default {
   width: 100%;
   padding: clamp(12px, 1.2vw, 18px) clamp(15px, 1.5vw, 25px);
   font-size: clamp(0.9em, 1.1vw, 1.2em);
-  border: 2px solid #394038;
+  border: 2px solid #2d2e2d;
   border-radius: 30px;
-  background-color: #394038;
+  background-color: #2d2e2d;
   color: #f3f8f1;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .5);
   cursor: pointer;

@@ -5,17 +5,21 @@
     <div class="filters">
       <div class="search-box">
         <i class='bx bx-search'></i>
-        <input type="text" placeholder="Поиск в избранном...">
+        <input
+          type="text"
+          placeholder="Поиск в избранном..."
+          v-model="searchQuery"
+        />
       </div>
-      <select class="sort-select">
-        <option>Сортировать по дате</option>
-        <option>Сортировать по названию</option>
+      <select class="sort-select" v-model="sortOrder">
+        <option value="asc">Сортировать от A–Я</option>
+        <option value="desc">Сортировать от Я–A</option>
       </select>
     </div>
 
     <div class="favorites-list">
       <div
-        v-for="(item, index) in favorites"
+        v-for="(item, index) in filteredAndSortedFavorites"
         :key="index"
         class="favorite-item"
       >
@@ -48,6 +52,14 @@
           <i class='bx bx-search-alt'></i> Найти материалы
         </router-link>
       </div>
+
+      <div
+        v-if="favorites.length > 0 && filteredAndSortedFavorites.length === 0"
+        class="empty-state"
+      >
+        <i class='bx bx-bookmark-heart'></i>
+        <p>Совпадений не найдено</p>
+      </div>
     </div>
   </section>
 </template>
@@ -61,7 +73,27 @@ export default {
       required: true
     }
   },
-  emits: ['remove-favorite']
+  emits: ['remove-favorite'],
+  data() {
+    return {
+      searchQuery: '',
+      sortOrder: 'asc'
+    }
+  },
+  computed: {
+    filteredAndSortedFavorites() {
+      const query = this.searchQuery.trim().toLowerCase()
+      return this.favorites
+        .filter(item => item.title?.toLowerCase().startsWith(query))
+        .sort((a, b) => {
+          const titleA = a.title?.toLowerCase() || ''
+          const titleB = b.title?.toLowerCase() || ''
+          return this.sortOrder === 'asc'
+            ? titleA.localeCompare(titleB)
+            : titleB.localeCompare(titleA)
+        })
+    }
+  }
 }
 </script>
 
@@ -112,17 +144,39 @@ h2 i {
 }
 
 .sort-select {
-  padding: 10px 15px;
+  padding: 10px 40px 10px 12px; /* справа место под стрелку */
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 0.95rem;
   background: white;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  min-width: 180px;
+  line-height: 1.2;
+
+  /* управление стрелкой */
+  appearance: none;
+  background-image: none; /* убираем стандартную стрелку (чтобы Safari/Firefox не глючили) */
+  position: relative;
 }
 
-.favorites-list {
+.sort-select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: white;
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  width: fit-content;
+  min-width: 180px;
+  line-height: 1.2;
+
+  appearance: none;        /* отключает стрелку в большинстве браузеров */
+  -webkit-appearance: none; /* для Safari */
+  -moz-appearance: none;    /* для Firefox */
+  background-image: none;   /* на всякий случай */
 }
 
 .favorite-item {
@@ -131,6 +185,7 @@ h2 i {
   border-radius: 10px;
   padding: 20px;
   transition: all 0.3s ease;
+  margin-bottom: 20px;
 }
 
 .favorite-item:hover {
@@ -313,5 +368,6 @@ h2 i {
   .filters {
     flex-direction: column;
   }
+
 }
 </style>

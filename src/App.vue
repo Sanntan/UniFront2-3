@@ -72,12 +72,12 @@ body {
   align-items: center;
   min-height: 100vh;
   background-color: #c6dab7; 
-  background: url('./assets/images/Fon.png') no-repeat center center fixed;
+  background: url('./assets/images/fon_test.png') no-repeat center center fixed;
   background-size: cover;
 }
 .dark-theme body {
   background-color: #3a4036;
-  background: url('./assets/images/Fon2.png') no-repeat center center fixed;
+  background: url('./assets/images/fon_dark_test.png') no-repeat center center fixed;
   background-size: cover;
   color: #f0f0f0;
 }
