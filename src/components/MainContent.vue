@@ -1,5 +1,6 @@
 <template>
   <div class="content-container">
+    <!-- Левая часть -->
     <div class="intro">
       <h1>НАЙДИ СВОИХ В НАУКЕ</h1>
       <p>
@@ -14,6 +15,7 @@
       </footer>
     </div>
 
+    <!-- Правая часть -->
     <div class="right-panel">
       <form class="search-bar search-bar-column" @submit.prevent>
         <div class="file-input-wrapper file-hover-transition">
@@ -38,7 +40,6 @@
             style="background: #fff; color: #394038; border: 2px solid #394038;"
           >
         </div>
-
       </form>
 
       <!-- 🔄 Прогресс-бар -->
@@ -48,19 +49,20 @@
 
       <!-- ✅ Результаты -->
       <div v-if="showResults" class="results-container">
-        <div
-          class="article-card"
-          v-for="(article, index) in results"
-          :key="index"
-        >
+        <div class="article-card" v-for="(article, index) in results" :key="index">
           <h3>{{ article.title }}</h3>
           <p><strong>Авторы:</strong> {{ article.authors }}</p>
           <p><a :href="article.article_url" target="_blank">Ссылка на статью</a></p>
-          <button class="favorite-button" @click="handleAddToFavorites">
+          <button class="favorite-button" @click="handleAddToFavorites(article)">
             <i class="bx bxs-star"></i> В избранное
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- 🪧 Уведомление -->
+    <div v-if="showToast" class="custom-toast" :class="{ 'dark-toast': isDarkTheme }">
+      {{ toastMessage }}
     </div>
   </div>
 </template>
@@ -76,6 +78,9 @@ export default {
       results: [],
       progress: 0,
       isProcessing: false,
+      showToast: false,
+      toastMessage: '',
+      isDarkTheme: false,
     };
   },
   watch: {
@@ -83,7 +88,23 @@ export default {
       this.showResults = newValue.trim().length > 0;
     }
   },
+  mounted() {
+    this.checkTheme();
+    const observer = new MutationObserver(this.checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  },
   methods: {
+    checkTheme() {
+      this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
+    },
+    showSuccessToast(message) {
+      this.toastMessage = message;
+      this.showToast = true;
+      setTimeout(() => {
+        this.showToast = false;
+        this.toastMessage = '';
+      }, 3000);
+    },
     async handleFileChange(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -97,7 +118,6 @@ export default {
       const formData = new FormData();
       formData.append("file", file);
 
-      // Имитация прогресса
       const interval = setInterval(() => {
         if (this.progress < 90) {
           this.progress += Math.random() * 5;
@@ -168,14 +188,38 @@ export default {
         }, 800);
       }
     },
-    handleAddToFavorites() {
-      const isAuth = sessionStorage.getItem('isAuthenticated') === 'true';
-      if (!isAuth) {
-        this.$emit('open-auth'); // <-- это важно
-      } else {
-        console.log('Добавлено в избранное (заглушка)');
+    async handleAddToFavorites(article) {
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      if (!user || !user.user_id) {
+        this.$emit('open-auth');
+        return;
       }
-    }
+
+      try {
+        const res = await fetch("http://localhost:8000/api/favorites/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.user_id,
+            article_id: article.article_id
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.status === 409 || data.message?.includes("уже")) {
+          this.showSuccessToast("⚠️ Статья уже в избранном");
+        } else if (data.success) {
+          this.showSuccessToast("✅ Статья успешно добавлена в избранное!");
+          this.$emit("refresh-favorites");
+        } else {
+          this.showSuccessToast("⚠️ " + (data.message || "Не удалось добавить в избранное."));
+        }
+      } catch (err) {
+        console.error("Ошибка добавления в избранное:", err);
+        this.showSuccessToast("❌ Ошибка при добавлении в избранное.");
+      }
+    },
   }
 }
 </script>
@@ -494,6 +538,24 @@ export default {
 
 .dark-theme .progress-bar {
   background-color: #f3f8f1;
+}
+
+.custom-toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: #394038;
+  color: #f3f8f1;
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-size: 0.95rem;
+  z-index: 9999;
+  transition: all 0.3s ease;
+}
+.dark-toast {
+  background-color: #f3f8f1;
+  color: #394038;
 }
 
 </style>

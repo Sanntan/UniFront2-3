@@ -14,7 +14,7 @@
             v-for="tab in tabs"
             :key="tab.id"
             :class="{ active: activeTab === tab.id }"
-            @click="activeTab = tab.id"
+            @click="switchTab(tab.id)"
           >
             <i :class="tab.icon"></i>
             {{ tab.name }}
@@ -63,8 +63,28 @@ export default {
     }
   },
   methods: {
-    removeFavorite(index) {
-      this.favorites.splice(index, 1);
+    switchTab(tabId) {
+      this.activeTab = tabId;
+      if (tabId === 'favorites') {
+        this.fetchFavorites();
+      }
+    },
+    async removeFavorite(index) {
+      const userData = JSON.parse(sessionStorage.getItem('user'));
+      const articleId = this.favorites[index].article_id;
+      try {
+        const res = await fetch(`http://localhost:8000/api/favorites/remove`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userData.user_id, article_id: articleId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.favorites.splice(index, 1);
+        }
+      } catch (e) {
+        console.error("Ошибка удаления из избранного:", e);
+      }
     },
     checkTheme() {
       this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
@@ -79,7 +99,20 @@ export default {
           this.user = data.user;
         }
       } catch (e) {
-        // Можно показать ошибку
+        console.error("Ошибка загрузки профиля:", e);
+      }
+    },
+    async fetchFavorites() {
+      const userData = JSON.parse(sessionStorage.getItem('user'));
+      if (!userData) return;
+      try {
+        const res = await fetch(`http://localhost:8000/api/favorites/${userData.user_id}`);
+        const data = await res.json();
+
+        // Для обратной совместимости: если сервер возвращает просто массив
+        this.favorites = Array.isArray(data) ? data : (data.favorites || []);
+      } catch (e) {
+        console.error("Ошибка загрузки избранного:", e);
       }
     },
   },
@@ -91,6 +124,7 @@ export default {
       attributeFilter: ['class']
     });
     this.fetchUserData();
+    this.fetchFavorites(); // <-- обязательно
   }
 }
 </script>
