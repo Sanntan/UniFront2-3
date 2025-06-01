@@ -71,7 +71,15 @@ def query_similar_articles(query_embedding: np.ndarray):
     )
     articles = cursor.fetchall()
 
-    id_to_article = {a[0]: {"title": a[1], "authors": a[2], "article_url": a[3]} for a in articles}
+    id_to_article = {
+        a[0]: {
+            "article_id": a[0],
+            "title": a[1],
+            "authors": a[2],
+            "article_url": a[3]
+        }
+        for a in articles
+    }
     results = [id_to_article[aid] for aid in similar_ids if aid in id_to_article]
 
     cursor.close()
