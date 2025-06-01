@@ -2,7 +2,9 @@
   <div class="content-container">
     <div class="intro">
       <h1>НАЙДИ СВОИХ В НАУКЕ</h1>
-      <p>Сервис для поиска исследователей для работы над исследовательским проектом, работающих в схожей области или похожей тематике</p>
+      <p>
+        Сервис для поиска исследователей для работы над исследовательским проектом, работающих в схожей области или похожей тематике
+      </p>
       <footer>
         <div class="social-links">
           <a href="#"><i class='bx bxl-github'></i></a>
@@ -11,29 +13,47 @@
         </div>
       </footer>
     </div>
-    <form action="#" class="search-bar search-bar-column">
-      <!-- Dropzone для файла -->
-      <div class="file-input-wrapper file-hover-transition">
-        <input 
-          type="file" 
-          id="file-upload"
-          accept=".pdf,.doc,.docx,.txt" 
-          aria-label="Загрузить файл"
+
+    <div class="right-panel">
+      <form class="search-bar search-bar-column" @submit.prevent>
+        <div class="file-input-wrapper file-hover-transition">
+          <input 
+            type="file" 
+            id="file-upload"
+            accept=".pdf,.doc,.docx,.txt"
+            @change="handleFileChange"
+          >
+          <label for="file-upload" class="file-input-label">
+            <span class="placeholder-text">{{ fileName || 'Загрузите файл...' }}</span>
+          </label>
+        </div>
+
+        <div class="file-input-wrapper text-input-wrapper file-hover-transition">
+          <input
+            type="text"
+            class="file-input-label"
+            placeholder="Введите текст"
+            v-model="inputText"
+            style="background: #fff; color: #394038; border: 2px solid #394038;"
+          >
+        </div>
+      </form>
+
+      <div v-if="showResults" class="results-container">
+        <div
+          class="article-card"
+          v-for="(article, index) in dummyResults"
+          :key="index"
         >
-        <label for="file-upload" class="file-input-label">
-          <span class="placeholder-text">Загрузите файл...</span>
-        </label>
+          <h3>{{ article.title }}</h3>
+          <p><strong>Авторы:</strong> {{ article.authors }}</p>
+          <p><a :href="article.article_url" target="_blank">Ссылка на статью</a></p>
+          <button class="favorite-button" @click="handleAddToFavorites">
+            <i class="bx bxs-star"></i> В избранное
+          </button>
+        </div>
       </div>
-      <!-- Поле для текста -->
-      <div class="file-input-wrapper text-input-wrapper file-hover-transition">
-        <input
-          type="text"
-          class="file-input-label"
-          placeholder="Введите текст"
-          style="background: #fff; color: #394038; border: 2px solid #394038;"
-        >
-      </div>
-    </form>
+    </div>
   </div>
 </template>
 
@@ -43,28 +63,61 @@ export default {
   data() {
     return {
       inputText: '',
-      fileName: ''
+      fileName: '',
+      showResults: false,
+      dummyResults: [
+        {
+          title: 'Анализ факторов устойчивости экосистем',
+          authors: 'Иванов И.И., Петров П.П.',
+          article_url: '#'
+        },
+        {
+          title: 'Инновационные подходы к обработке данных',
+          authors: 'Сидоров А.А., Кузнецова Л.Л.',
+          article_url: '#'
+        },
+        {
+          title: 'Моделирование информационных потоков в науке',
+          authors: 'Орлова И.В.',
+          article_url: '#'
+        },
+        {
+          title: 'Эволюция методов машинного обучения',
+          authors: 'Дмитриев М.С.',
+          article_url: '#'
+        },
+        {
+          title: 'Методы кластеризации научных статей',
+          authors: 'Фёдоров В.Г., Чернова О.Н.',
+          article_url: '#'
+        }
+      ]
+    };
+  },
+  watch: {
+    inputText(newValue) {
+      this.showResults = newValue.trim().length > 0;
     }
   },
   methods: {
-    triggerFileInput() {
-      this.$refs.fileInput && this.$refs.fileInput.click();
-    },
-    handleFileChange(e) {
+  handleFileChange(e) {
       const file = e.target.files[0];
-      if (file) this.fileName = file.name;
+      if (file) {
+        this.fileName = file.name;
+        this.showResults = true;
+      }
     },
-    handleDrop(e) {
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        this.fileName = files[0].name;
-        // Если нужно сразу записать файл, сохрани его как this.droppedFile = files[0]
+    handleAddToFavorites() {
+      const isAuth = sessionStorage.getItem('isAuthenticated') === 'true';
+      if (!isAuth) {
+        this.$emit('open-auth'); // <-- это важно
+      } else {
+        console.log('Добавлено в избранное (заглушка)');
       }
     }
   }
 }
 </script>
-
 
 <style scoped>
 .content-container {
@@ -285,6 +338,50 @@ export default {
   box-shadow: 0 4px 16px rgba(57,64,56,0.09);
   transform: scale(1.03);
   z-index: 2;
+}
+
+.results-container {
+  margin-top: 40px;
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.article-card {
+  border: 2px solid #394038;
+  border-radius: 20px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.article-card:hover {
+  transform: scale(1.02);
+}
+
+.favorite-button {
+  margin-top: 10px;
+  background: #394038;
+  color: #f3f8f1;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.favorite-button i {
+  font-size: 18px;
+}
+
+.favorite-button:hover {
+  background: #4c5549;
 }
 
 </style>
