@@ -1,6 +1,6 @@
 <template>
   <header>
-    <h2 class="logo">
+    <router-link to="/" class="logo">
       <img 
         v-show="!isDarkTheme"
         src="../assets/images/Logo.png" 
@@ -13,9 +13,8 @@
         alt="Логотип темной темы"
         class="logo-image"
       >
-    </h2>
+    </router-link>
     <nav class="navigation">
-      <router-link to="/">Главная</router-link>
       <a href="#" 
          class="nav-link" 
          @click.prevent="navigateToCabinet"
@@ -93,7 +92,10 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener('auth-changed', this.forceAuthUpdate);
-  }
+  },
+  mounted() {
+    this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
+  },
 }
 </script>
 

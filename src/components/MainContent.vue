@@ -45,6 +45,7 @@
           </label>
         </div>
 
+        <!-- 
         <div class="file-input-wrapper text-input-wrapper file-hover-transition">
           <input
             type="text"
@@ -55,6 +56,7 @@
             style="background: #fff; color: #394038; border: 2px solid #394038;"
           >
         </div>
+        -->
       </form>
 
       <!-- 🔄 Прогресс-бар -->
@@ -100,11 +102,13 @@ export default {
       hideEmailTimer: null,
     };
   },
+  /*
   watch: {
     inputText(newValue) {
       this.showResults = newValue.trim().length > 0;
     }
   },
+  */
   mounted() {
     this.checkTheme();
     const observer = new MutationObserver(this.checkTheme);
@@ -185,6 +189,7 @@ export default {
         }, 800);
       }
     },
+    /*
     async handleTextSubmit() {
       if (!this.inputText.trim()) return;
 
@@ -226,6 +231,7 @@ export default {
         }, 800);
       }
     },
+    */
     async handleAddToFavorites(article) {
       const user = JSON.parse(sessionStorage.getItem('user'));
       if (!user || !user.user_id) {
@@ -639,6 +645,5 @@ export default {
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
-
 
 </style>
