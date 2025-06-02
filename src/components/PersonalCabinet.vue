@@ -23,10 +23,11 @@
       </aside>
       <main class="cabinet-content">
         <FavoritesSection
-          v-if="activeTab === 'favorites'"
+          v-if="activeTab === 'favorites' && !isLoadingFavorites"
           :favorites="favorites"
           @remove-favorite="removeFavorite"
         />
+        <p v-if="activeTab === 'favorites' && isLoadingFavorites">Загрузка избранного...</p>
         <ProfileSection
           v-if="activeTab === 'profile'"
           :user="user"
@@ -49,6 +50,7 @@ export default {
   },
   data() {
     return {
+      isLoadingFavorites: true,
       isDarkTheme: false,
       activeTab: 'favorites',
       tabs: [
@@ -103,28 +105,37 @@ export default {
       }
     },
     async fetchFavorites() {
+      this.isLoadingFavorites = true;
       const userData = JSON.parse(sessionStorage.getItem('user'));
       if (!userData) return;
+
       try {
         const res = await fetch(`http://localhost:8000/api/favorites/${userData.user_id}`);
         const data = await res.json();
-
-        // Для обратной совместимости: если сервер возвращает просто массив
         this.favorites = Array.isArray(data) ? data : (data.favorites || []);
       } catch (e) {
         console.error("Ошибка загрузки избранного:", e);
+      } finally {
+        this.isLoadingFavorites = false;
       }
     },
   },
   mounted() {
     this.checkTheme();
+
     const themeObserver = new MutationObserver(this.checkTheme);
     themeObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
     });
+
     this.fetchUserData();
-    this.fetchFavorites(); // <-- обязательно
+    this.fetchFavorites();
+
+    window.addEventListener('auth-loaded', () => {
+      this.fetchUserData()
+      this.fetchFavorites()
+    });
   }
 }
 </script>

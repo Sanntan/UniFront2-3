@@ -8,9 +8,24 @@
       </p>
       <footer>
         <div class="social-links">
-          <a href="#"><i class='bx bxl-github'></i></a>
-          <a href="#"><i class='bx bxs-envelope'></i></a>
-          <a href="#"><i class='bx bxl-telegram'></i></a>
+          <a href="https://github.com/Sanntan/UniFront2-3" target="_blank">
+            <i class='bx bxl-github'></i>
+          </a>
+          <div class="email-wrapper" @mouseenter="cancelEmailHide" @mouseleave="scheduleEmailHide">
+            <i class='bx bxs-envelope' @click="toggleEmailPopup"></i>
+            <transition name="fade">
+              <div
+                v-if="showEmailPopup"
+                class="email-popup"
+                :class="{ 'dark-popup': isDarkTheme }"
+                @mouseenter="cancelEmailHide"
+                @mouseleave="scheduleEmailHide"
+              >
+                <p @click="copyEmail('stud0000286472@utmn.ru')">stud0000286472@utmn.ru</p>
+                <p @click="copyEmail('stud0000282272@utmn.ru')">stud0000282272@utmn.ru</p>
+              </div>
+            </transition>
+          </div>
         </div>
       </footer>
     </div>
@@ -81,6 +96,8 @@ export default {
       showToast: false,
       toastMessage: '',
       isDarkTheme: false,
+      showEmailPopup: false,
+      hideEmailTimer: null,
     };
   },
   watch: {
@@ -104,6 +121,27 @@ export default {
         this.showToast = false;
         this.toastMessage = '';
       }, 3000);
+    },
+    toggleEmailPopup() {
+      this.showEmailPopup = !this.showEmailPopup;
+    },
+    copyEmail(email) {
+      navigator.clipboard.writeText(email).then(() => {
+        this.showSuccessToast(`📋 Скопировано: ${email}`);
+        this.showEmailPopup = false;
+      });
+    },
+    scheduleEmailHide() {
+      this.hideEmailTimer = setTimeout(() => {
+        this.showEmailPopup = false;
+      }, 400); // Задержка перед скрытием
+    },
+
+    cancelEmailHide() {
+      if (this.hideEmailTimer) {
+        clearTimeout(this.hideEmailTimer);
+        this.hideEmailTimer = null;
+      }
     },
     async handleFileChange(e) {
       const file = e.target.files[0];
@@ -557,5 +595,50 @@ export default {
   background-color: #f3f8f1;
   color: #394038;
 }
+
+.email-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.email-popup {
+  position: absolute;
+  top: 30px;
+  left: -20px;
+  background-color: #f3f8f1;
+  color: #394038;
+  border: 2px solid #394038;
+  border-radius: 12px;
+  padding: 10px 15px;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.email-popup p {
+  margin: 5px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.email-popup p:hover {
+  text-decoration: underline;
+}
+
+.dark-theme .email-popup {
+  background-color: #394038;
+  color: #f3f8f1;
+  border-color: #f3f8f1;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
 
 </style>

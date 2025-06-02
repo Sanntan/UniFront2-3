@@ -25,7 +25,10 @@
           <label><input type="checkbox" v-model="loginForm.remember"> Запомнить меня</label>
           <a href="#" v-show="false">Забыли пароль?</a>
         </div>
-        <button type="submit" class="btn">Вход</button>
+        <button type="submit" class="btn" :disabled="isLoggingIn">
+          <span v-if="isLoggingIn">Вход...</span>
+          <span v-else>Вход</span>
+        </button>
         <p v-if="loginError" class="error">{{ loginError }}</p>
         <div class="social-login">
           <p>Или войти через:</p>
@@ -106,6 +109,7 @@ export default {
   data() {
     return {
       isRegister: false,
+      isLoggingIn: false,
       showLoginPassword: false,
       showRegisterPassword: false,
       showConfirmPassword: false,
@@ -140,6 +144,7 @@ export default {
       this.$emit('close')
     },
     async handleLogin() {
+      this.isLoggingIn = true
       try {
         const res = await fetch('http://localhost:8000/api/login', {
           method: 'POST',
@@ -157,11 +162,14 @@ export default {
           this.$emit('login-success')
           this.closeModal()
           window.dispatchEvent(new Event('auth-changed'));
+          window.dispatchEvent(new CustomEvent('auth-loaded'));
         } else {
           this.loginError = data.message || 'Неверный email или пароль'
         }
       } catch (err) {
         this.loginError = 'Ошибка соединения с сервером'
+      } finally {
+        this.isLoggingIn = false
       }
     },
     async handleRegister() {
