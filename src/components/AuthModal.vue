@@ -9,17 +9,17 @@
       <h2>Авторизация</h2>
       <form @submit.prevent="handleLogin">
         <div class="input-box">
-          <span class="icon"><i class="bx bx-envelope"></i></span>
           <input type="email" v-model="loginForm.email" required>
           <label>Электронная почта</label>
+          <span class="icon"><i class="bx bx-envelope"></i></span>
         </div>
         <div class="input-box">
-          <span class="icon"><i class="bx bx-lock-alt"></i></span>
           <input :type="showLoginPassword ? 'text' : 'password'" v-model="loginForm.password" required>
           <label>Пароль</label>
           <span class="icon-eye" @click="showLoginPassword = !showLoginPassword">
             <i :class="showLoginPassword ? 'bx bx-show' : 'bx bx-hide'"></i>
           </span>
+          <span class="icon"><i class="bx bx-lock-alt"></i></span>
         </div>
         <div class="remember-forgot">
           <label><input type="checkbox" v-model="loginForm.remember"> Запомнить меня</label>
@@ -39,7 +39,7 @@
           </div>
         </div>
         <div class="login-register">
-          <p>Создать аккаунт? <a href="#" @click.prevent="toggleForm">Регистрация</a></p>
+          <p>Нет аккаунта? <a href="#" @click.prevent="toggleForm">Регистрация</a></p>
         </div>
       </form>
     </div>
@@ -297,7 +297,7 @@ export default {
 }
 
 .input-box {
-  background: #f3f8f1;
+
   position: relative;
   width: 100%;
   height: 50px;
@@ -306,7 +306,7 @@ export default {
 }
 
 .input-box label {
-  background: #f3f8f1;
+
   position: absolute;
   top: 50%;
   left: 5px;
@@ -337,21 +337,23 @@ export default {
 
 .input-box .icon {
   position: absolute;
-  right: 30px;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
   font-size: 1.2em;
-  color:#394038;
-  line-height: 57px;
-  background: transparent;
+  color: #394038;
+  pointer-events: none;
 }
 
 .input-box .icon-eye {
   position: absolute;
-  right: 8px;
+  top: 50%;
+  right: 38px;
+  transform: translateY(-50%);
   font-size: 1.2em;
-  color:#394038;
-  line-height: 57px;
-  background: transparent;
+  color: #394038;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .remember-forgot {
@@ -467,10 +469,6 @@ export default {
   transform: scale(1.03);
 }
 
-.login-register p, .login-register p a {
-  background: #f3f8f1;
-}
-
 .dark-theme .wrapper {
   border-color: #99aa8e;
   background: #99aa8e;
@@ -487,12 +485,12 @@ export default {
 }
 
 .dark-theme .input-box {
-  background: #99aa8e;
+
   border-bottom-color: #161a15;
 }
 
 .dark-theme .input-box label {
-  background: #99aa8e;
+
   color: #161a15;
 }
 
@@ -523,7 +521,6 @@ export default {
 .dark-theme .login-register p,
 .dark-theme .login-register p a {
   color: #161a15;
-  background: #99aa8e;
 }
 
 .dark-theme .icon-close {

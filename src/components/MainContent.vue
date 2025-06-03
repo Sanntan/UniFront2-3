@@ -32,48 +32,48 @@
 
     <!-- Правая часть -->
     <div class="right-panel">
-      <form class="search-bar search-bar-column" @submit.prevent>
-        <div class="file-input-wrapper file-hover-transition">
-          <input 
-            type="file" 
-            id="file-upload"
-            accept=".pdf,.doc,.docx,.txt"
-            @change="handleFileChange"
+      <div class="results-block">
+        <form class="search-bar search-bar-column" @submit.prevent>
+          <div class="file-input-wrapper file-hover-transition">
+            <input 
+              type="file" 
+              id="file-upload"
+              accept=".pdf,.doc,.docx,.txt"
+              @change="handleFileChange"
+            >
+            <label for="file-upload" class="file-input-label">
+              <span class="placeholder-text">{{ fileName || 'Загрузите файл...' }}</span>
+            </label>
+          </div>
+        </form>
+
+        <div v-if="isProcessing" class="progress-wrapper" style="grid-column: 1 / -1">
+          <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+        </div>
+
+        <template v-if="showResults">
+          <div
+            class="article-card"
+            v-for="(article, index) in results"
+            :key="index"
           >
-          <label for="file-upload" class="file-input-label">
-            <span class="placeholder-text">{{ fileName || 'Загрузите файл...' }}</span>
-          </label>
-        </div>
-
-        <!-- 
-        <div class="file-input-wrapper text-input-wrapper file-hover-transition">
-          <input
-            type="text"
-            class="file-input-label"
-            placeholder="Введите текст"
-            v-model="inputText"
-            @keydown.enter.prevent="handleTextSubmit"
-            style="background: #fff; color: #394038; border: 2px solid #394038;"
-          >
-        </div>
-        -->
-      </form>
-
-      <!-- 🔄 Прогресс-бар -->
-      <div v-if="isProcessing" class="progress-wrapper">
-        <div class="progress-bar" :style="{ width: progress + '%' }"></div>
-      </div>
-
-      <!-- ✅ Результаты -->
-      <div v-if="showResults" class="results-container">
-        <div class="article-card" v-for="(article, index) in results" :key="index">
-          <h3>{{ article.title }}</h3>
-          <p><strong>Авторы:</strong> {{ article.authors }}</p>
-          <p><a :href="article.article_url" target="_blank">Ссылка на статью</a></p>
-          <button class="favorite-button" @click="handleAddToFavorites(article)">
-            <i class="bx bxs-star"></i> В избранное
-          </button>
-        </div>
+            <h3>{{ article.title }}</h3>
+            <p class="authors">{{ article.authors }}</p>
+            <div class="card-actions">
+              <a
+                :href="article.article_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="favorite-button article-link-button"
+              >
+                <i class="bx bx-link-external"></i> Ссылка на статью
+              </a>
+              <button class="favorite-button" @click="handleAddToFavorites(article)">
+                <i class="bx bxs-star"></i> В избранное
+              </button>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -310,16 +310,6 @@ export default {
   transition: all 0.4s ease;
 }
 
-.search-bar {
-  width: min(45%, 600px);
-  min-width: min(90vw, 400px);
-  max-width: 650px;
-  display: flex;
-  gap: 10px;
-  margin-top: clamp(0px, 5vh, 50px);
-  transition: all 0.4s ease;
-}
-
 .file-input-wrapper {
   position: relative;
   width: 100%;
@@ -500,17 +490,67 @@ export default {
 }
 
 .article-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border: 2px solid #394038;
   border-radius: 20px;
   padding: 20px;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   transition: transform 0.2s ease;
+  min-width: 375px;
+}
+
+.results-block {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); /* ширина одной карточки подбери под дизайн */
+  gap: 24px;
+  width: 100%;
+  max-width: 800px; /* или что тебе нужно */
+  margin: 0 auto;
+}
+
+/* Поиск всегда на всю ширину */
+.search-bar {
+  grid-column: 1 / -1;
+  margin-bottom: 12px;
 }
 
 .article-card:hover {
   transform: scale(1.02);
 }
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-bottom: 4px;
+}
+
+
+.article-link-button {
+  text-decoration: none;
+}
+
+.article-link-button:hover {
+  background: #4c5549;
+}
+
+.dark-theme .article-link-button {
+  background: #f3f8f1;
+  color: #394038;
+  box-shadow: 0 2px 6px rgba(255,255,255,0.3);
+}
+
+.dark-theme .article-link-button:hover {
+  background: #e0e8dc;
+}
+
+.dark-theme .article-link-button i {
+  color: #394038;
+}
+
 
 .favorite-button {
   margin-top: 10px;
@@ -542,11 +582,6 @@ export default {
   box-shadow: 0 2px 8px rgba(255,255,255,0.1);
 }
 
-.dark-theme .article-card a {
-  color: #e0e8dc;
-  text-decoration: underline;
-}
-
 .dark-theme .favorite-button {
   background: #f3f8f1;
   color: #394038;
@@ -558,8 +593,7 @@ export default {
 }
 
 .progress-wrapper {
-  width: 100%;
-  max-width: 650px;
+  grid-column: 1 / -1;
   height: 12px;
   border-radius: 30px;
   background-color: #c7d7bd;
@@ -644,6 +678,10 @@ export default {
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
+}
+
+.article-card .authors {
+  font-style: italic;
 }
 
 </style>

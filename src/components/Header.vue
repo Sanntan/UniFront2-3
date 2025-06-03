@@ -15,18 +15,18 @@
       >
     </router-link>
     <nav class="navigation">
+      <button class="theme-toggle" @click="toggleTheme">
+        <i :class="themeIcon"></i>
+      </button>
       <a href="#" 
          class="nav-link" 
          @click.prevent="navigateToCabinet"
          :class="{ 'active': $route.path === '/cabinet' }">
         Личный кабинет
       </a>
-      <button class="theme-toggle" @click="toggleTheme">
-        <i :class="themeIcon"></i>
-      </button>
-      <button class="btnLogin-popup" @click="handleAuthClick">
-        {{ isAuthenticated ? 'Выйти' : 'Авторизация/Регистрация' }}
-      </button>
+      <a class="nav-link " @click="handleAuthClick">
+        {{ isAuthenticated ? 'Выйти' : 'Авторизация' }}
+      </a>
     </nav>
     <button class="mobile-menu-btn" @click="toggleMobileMenu">
       <i class='bx bx-menu'></i>
@@ -112,7 +112,7 @@ header {
   z-index: 99;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
   background-color: #ffffff;
-  transition: all 0.4s ease;
+  transition: box-shadow 0.4s ease;
 }
 
 img {
@@ -124,7 +124,7 @@ img {
 .navigation {
   display: flex;
   align-items: center;
-  transition: all 0.4s ease;
+  transition: color 0.4s, border 0.4s;
 }
 
 .navigation a {
@@ -285,7 +285,7 @@ img {
 .dark-theme header {
   background-color: #141414;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  transition: all 0.4s ease;
+  transition: box-shadow 0.4s ease;
 }
 
 .dark-theme .navigation a {
@@ -332,7 +332,7 @@ img {
 
 .dark-theme .navigation {
   background: #141414;
-  transition: all 0.4s ease;
+  transition: color 0.4s, border 0.4s;
 }
 
 .dark-theme .navigation.active {

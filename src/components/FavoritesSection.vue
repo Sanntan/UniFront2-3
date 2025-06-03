@@ -184,7 +184,7 @@ h2 i {
   background: #f3f8f1;
   border-radius: 10px;
   padding: 20px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
   margin-bottom: 20px;
 }
 
