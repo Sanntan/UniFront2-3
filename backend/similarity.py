@@ -59,7 +59,7 @@ def query_similar_articles(query_embedding: np.ndarray):
 
     index = faiss.IndexFlatL2(len(query_embedding))
     index.add(np.stack(vectors))
-    distances, indices = index.search(np.expand_dims(query_embedding, axis=0), 5)
+    distances, indices = index.search(np.expand_dims(query_embedding, axis=0), 80)
 
     similar_ids = [article_ids[idx] for idx in indices[0]]
 

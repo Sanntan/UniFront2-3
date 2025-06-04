@@ -32,29 +32,40 @@
 
     <!-- Правая часть -->
     <div class="right-panel">
-      <div class="results-block">
-        <form class="search-bar search-bar-column" @submit.prevent>
-          <div class="file-input-wrapper file-hover-transition">
-            <input 
-              type="file" 
+      <form class="search-bar search-bar-column" @submit.prevent>
+        <div class="file-input-wrapper file-hover-transition">
+           <input 
+              type="file"
               id="file-upload"
               accept=".pdf,.doc,.docx,.txt"
               @change="handleFileChange"
+              :class="{ 'file-has-value': fileName }"
             >
-            <label for="file-upload" class="file-input-label">
-              <span class="placeholder-text">{{ fileName || 'Загрузите файл...' }}</span>
-            </label>
-          </div>
-        </form>
-
-        <div v-if="isProcessing" class="progress-wrapper" style="grid-column: 1 / -1">
-          <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+          <label for="file-upload" class="file-input-label">
+            <span class="placeholder-text">
+              {{ fileName || 'Загрузите файл...' }}
+            </span>
+          </label>
+          <button
+            v-if="fileName"
+            class="clear-file-btn"
+            type="button"
+            @click="clearFile"
+            aria-label="Очистить"
+          >
+            ×
+          </button>
         </div>
+      </form>
 
+      <div v-if="isProcessing" class="progress-wrapper" style="grid-column: 1 / -1">
+        <div class="progress-bar" :style="{ width: progress + '%' }"></div>
+      </div>
+      <div class="results-block">
         <template v-if="showResults">
           <div
             class="article-card"
-            v-for="(article, index) in results"
+            v-for="(article, index) in getPaginatedResults()"
             :key="index"
           >
             <h3>{{ article.title }}</h3>
@@ -75,6 +86,26 @@
           </div>
         </template>
       </div>
+      <div v-if="showResults && totalPages() > 1" class="pagination-block">
+        <button
+          :disabled="currentPage === 1"
+          @click="currentPage--"
+          class="pagination-btn"
+        >←</button>
+
+        <button
+          v-for="page in totalPages()"
+          :key="page"
+          :class="['pagination-btn', { active: currentPage === page }]"
+          @click="goToPage(page)"
+        >{{ page }}</button>
+
+        <button
+          :disabled="currentPage === totalPages()"
+          @click="currentPage++"
+          class="pagination-btn"
+        >→</button>
+      </div>
     </div>
 
     <!-- 🪧 Уведомление -->
@@ -91,8 +122,10 @@ export default {
     return {
       inputText: '',
       fileName: '',
+      allResults: [],
+      currentPage: 1,
+      pageSize: 8,
       showResults: false,
-      results: [],
       progress: 0,
       isProcessing: false,
       showToast: false,
@@ -102,6 +135,7 @@ export default {
       hideEmailTimer: null,
     };
   },
+
   /*
   watch: {
     inputText(newValue) {
@@ -117,6 +151,10 @@ export default {
   methods: {
     checkTheme() {
       this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
+    },
+    loadMore() {
+      const next = this.results.length + this.batchSize;
+      this.results = this.allResults.slice(0, next);
     },
     showSuccessToast(message) {
       this.toastMessage = message;
@@ -140,7 +178,31 @@ export default {
         this.showEmailPopup = false;
       }, 400); // Задержка перед скрытием
     },
-
+    getPaginatedResults() {
+      const start = (this.currentPage - 1) * this.pageSize;
+      return this.allResults.slice(start, start + this.pageSize);
+    },
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages()) {
+        this.currentPage = page;
+      }
+    },
+    totalPages() {
+      return Math.ceil(this.allResults.length / this.pageSize) || 1;
+    },
+    clearFile() {
+      this.fileName = '';
+      this.allResults = [];
+      this.currentPage = 1;
+      this.showResults = false;
+      this.progress = 0;
+      this.isProcessing = false;
+      // Если нужно, очищаем value поля input:
+      this.$nextTick(() => {
+        const input = document.getElementById("file-upload");
+        if (input) input.value = "";
+      });
+    },
     cancelEmailHide() {
       if (this.hideEmailTimer) {
         clearTimeout(this.hideEmailTimer);
@@ -153,6 +215,7 @@ export default {
 
       this.fileName = file.name;
       this.showResults = false;
+      this.allResults = [];
       this.results = [];
       this.progress = 0;
       this.isProcessing = true;
@@ -175,8 +238,9 @@ export default {
         if (!response.ok) throw new Error("Ошибка запроса");
 
         const data = await response.json();
-        this.results = data;
-        this.showResults = true;
+        this.allResults = data;      // сохраняем все карточки
+        this.currentPage = 1;        // сбрасываем страницу на первую
+        this.showResults = true;     // показываем блок с результатами
       } catch (err) {
         console.error("Ошибка при получении похожих статей:", err);
         this.results = [];
@@ -189,6 +253,7 @@ export default {
         }, 800);
       }
     },
+
     /*
     async handleTextSubmit() {
       if (!this.inputText.trim()) return;
@@ -269,6 +334,7 @@ export default {
 </script>
 
 <style scoped>
+
 .content-container {
   display: flex;
   align-items: center;
@@ -319,14 +385,22 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
+  left: 0; top: 0;
   opacity: 0;
   cursor: pointer;
+  z-index: 2;
+}
+
+.file-input-wrapper input[type="file"].file-has-value {
+  pointer-events: none;
 }
 
 .file-input-label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   min-height: 56px;
   box-sizing: border-box;
-  display: block;
   width: 100%;
   padding: clamp(12px, 1.2vw, 18px) clamp(15px, 1.5vw, 25px);
   font-size: clamp(0.9em, 1.1vw, 1.2em);
@@ -340,6 +414,8 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  position: relative;
+  z-index: 1;
 }
 
 .placeholder-text {
@@ -469,14 +545,6 @@ export default {
 
 .dark-theme .search-bar button:hover {
   background-color: #e0e8dc;
-}
-
-.file-hover-transition .file-input-label:hover,
-.file-hover-transition .file-input-label:focus-within {
-  border-color: #99aa8e;
-  box-shadow: 0 4px 16px rgba(57,64,56,0.09);
-  transform: scale(1.03);
-  z-index: 2;
 }
 
 .results-container {
@@ -683,5 +751,84 @@ export default {
 .article-card .authors {
   font-style: italic;
 }
+
+.pagination-block {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px 0 0 0;
+  gap: 8px;
+  width: 100%;
+}
+.pagination-btn {
+  background: #394038;
+  color: #f3f8f1;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pagination-btn.active, .pagination-btn:focus {
+  background: #99aa8e;
+  color: #394038;
+  font-weight: bold;
+}
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.dark-theme .pagination-btn {
+  background: #f3f8f1;
+  color: #394038;
+}
+.dark-theme .pagination-btn.active, .dark-theme .pagination-btn:focus {
+  background: #99aa8e;
+  color: #394038;
+}
+
+.pagination-btn:focus:not(.active) {
+  background: #394038 !important;
+  color: #f3f8f1 !important;
+}
+
+.dark-theme .pagination-btn:focus:not(.active) {
+  background: #f3f8f1 !important;
+  color: #394038 !important;
+}
+
+
+.clear-file-btn {
+  background: #394038;
+  color: #f3f8f1;
+  border: none;
+  border-radius: 18px;
+  padding: 0 18px;
+  font-size: 1.4em;
+  cursor: pointer;
+  margin-left: 12px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  transition: background 0.2s;
+  position: absolute;
+  right: 24px;
+  top: 25%;
+  z-index: 3;
+}
+.clear-file-btn:hover {
+  background: #4c5549;
+  color: #fff;
+}
+.dark-theme .clear-file-btn {
+  color: #394038;
+}
+.dark-theme .clear-file-btn:hover {
+  color: #ff5353;
+}
+
 
 </style>
