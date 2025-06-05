@@ -8,6 +8,8 @@ from register import router as register_router
 from similarity import router as similarity_router
 from favorites import router as favorites_router
 
+from change_password import router as password_router
+
 app = FastAPI()
 
 app.add_middleware(
@@ -23,3 +25,4 @@ app.include_router(user_router)
 app.include_router(register_router)
 app.include_router(similarity_router)
 app.include_router(favorites_router)
+app.include_router(password_router)
