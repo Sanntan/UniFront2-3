@@ -8,10 +8,19 @@
     <div class="form-box login">
       <h2>Авторизация</h2>
       <form @submit.prevent="handleLogin">
-        <div class="input-box">
-          <input type="email" v-model="loginForm.email" required>
+        <div class="input-box tooltip-container">
+          <input
+            type="email"
+            v-model="loginForm.email"
+            required
+            @focus="focusedField = 'loginEmail'"
+            @blur="focusedField = ''"
+          >
           <label>Электронная почта</label>
           <span class="icon"><i class="bx bx-envelope"></i></span>
+          <div class="tooltip" v-if="focusedField === 'loginEmail'">
+            Введите корректный email (например, name@example.com)
+          </div>
         </div>
         <div class="input-box">
           <input :type="showLoginPassword ? 'text' : 'password'" v-model="loginForm.password" required>
@@ -48,36 +57,83 @@
     <div class="form-box register">
       <h2>Регистрация</h2>
       <form @submit.prevent="handleRegister">
-        <div class="input-box">
+        <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-user"></i></span>
-          <input type="text" v-model="registerForm.firstName" required>
+          <input
+            type="text"
+            v-model="registerForm.firstName"
+            required
+            @focus="focusedField = 'firstName'"
+            @blur="focusedField = ''"
+          >
           <label>Имя</label>
+          <div class="tooltip" v-if="focusedField === 'firstName'">
+            Только кириллица, от 2 до 30 символов, с заглавной буквы
+          </div>
         </div>
-        <div class="input-box">
+        <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-user"></i></span>
-          <input type="text" v-model="registerForm.lastName" required>
+          <input
+            type="text"
+            v-model="registerForm.lastName"
+            required
+            @focus="focusedField = 'lastName'"
+            @blur="focusedField = ''"
+          >
           <label>Фамилия</label>
+          <div class="tooltip" v-if="focusedField === 'lastName'">
+            Только кириллица, от 2 до 30 символов, с заглавной буквы
+          </div>
         </div>
-        <div class="input-box">
+        <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-envelope"></i></span>
-          <input type="email" v-model="registerForm.email" required>
+          <input
+            type="email"
+            v-model="registerForm.email"
+            required
+            @focus="focusedField = 'email'"
+            @blur="focusedField = ''"
+          >
           <label>Электронная почта</label>
+          <transition name="tooltip-fade">
+            <div class="tooltip" v-if="focusedField === 'email'">
+              Пример: name@example.com
+            </div>
+          </transition>
         </div>
-        <div class="input-box">
+        <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-lock-alt"></i></span>
-          <input :type="showRegisterPassword ? 'text' : 'password'" v-model="registerForm.password" required>
+          <input
+            :type="showRegisterPassword ? 'text' : 'password'"
+            v-model="registerForm.password"
+            required
+            @focus="focusedField = 'password'"
+            @blur="focusedField = ''"
+          >
           <label>Пароль</label>
           <span class="icon-eye" @click="showRegisterPassword = !showRegisterPassword">
             <i :class="showRegisterPassword ? 'bx bx-show' : 'bx bx-hide'"></i>
           </span>
+          <div class="tooltip" v-if="focusedField === 'password'">
+            Мин. 8 символов, заглавная и строчная буквы, цифра, спецсимвол
+          </div>
         </div>
-        <div class="input-box">
+        <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-lock-alt"></i></span>
-          <input :type="showConfirmPassword ? 'text' : 'password'" v-model="registerForm.confirmPassword" required>
+          <input
+            :type="showConfirmPassword ? 'text' : 'password'"
+            v-model="registerForm.confirmPassword"
+            required
+            @focus="focusedField = 'confirmPassword'"
+            @blur="focusedField = ''"
+          >
           <label>Подтвердите пароль</label>
           <span class="icon-eye" @click="showConfirmPassword = !showConfirmPassword">
             <i :class="showConfirmPassword ? 'bx bx-show' : 'bx bx-hide'"></i>
           </span>
+          <div class="tooltip" v-if="focusedField === 'confirmPassword'">
+            Пароли должны совпадать
+          </div>
         </div>
         <button type="submit" class="btn">Зарегистрироваться</button>
         <p v-if="registerError" class="error">{{ registerError }}</p>
@@ -115,6 +171,7 @@ export default {
       showConfirmPassword: false,
       loginError: '',
       registerError: '',
+      focusedField: '',
       loginForm: {
         email: '',
         password: '',
@@ -125,8 +182,8 @@ export default {
         lastName: '',
         email: '',
         password: '',
-        confirmPassword: ''
-      }
+        confirmPassword: '', 
+      },
     }
   },
   computed: {
@@ -338,7 +395,6 @@ export default {
 }
 
 .input-box label {
-
   position: absolute;
   top: 50%;
   left: 5px;
@@ -578,6 +634,53 @@ export default {
 .dark-theme .error {
   background-color: rgba(255, 100, 100, 0.1);
   color: #ff6b6b;
+}
+
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  top: 105%; /* чуть ниже поля */
+  left: 0;
+  background: #f3f8f1;
+  border: 1px solid #394038;
+  color: #394038;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  max-width: 280px;
+  width: max-content;
+  white-space: normal;
+  word-wrap: break-word;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  opacity: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dark-theme .tooltip {
+  background: #394038;
+  color: #f3f8f1;
+  border-color: #f3f8f1;
+}
+
+.tooltip-fade-enter-from,
+.tooltip-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.tooltip-fade-enter-active,
+.tooltip-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dark-theme .tooltip {
+  background: #394038;
+  color: #f3f8f1;
+  border-color: #f3f8f1;
 }
 
 </style>
