@@ -63,6 +63,7 @@
             type="text"
             v-model="registerForm.firstName"
             required
+            :class="{ invalid: invalidFields.includes('firstName') }"
             @focus="focusedField = 'firstName'"
             @blur="focusedField = ''"
           >
@@ -71,12 +72,14 @@
             Только кириллица, от 2 до 30 символов, с заглавной буквы
           </div>
         </div>
+
         <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-user"></i></span>
           <input
             type="text"
             v-model="registerForm.lastName"
             required
+            :class="{ invalid: invalidFields.includes('lastName') }"
             @focus="focusedField = 'lastName'"
             @blur="focusedField = ''"
           >
@@ -85,28 +88,30 @@
             Только кириллица, от 2 до 30 символов, с заглавной буквы
           </div>
         </div>
+
         <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-envelope"></i></span>
           <input
             type="email"
             v-model="registerForm.email"
             required
+            :class="{ invalid: invalidFields.includes('email') }"
             @focus="focusedField = 'email'"
             @blur="focusedField = ''"
           >
           <label>Электронная почта</label>
-          <transition name="tooltip-fade">
-            <div class="tooltip" v-if="focusedField === 'email'">
-              Пример: name@example.com
-            </div>
-          </transition>
+          <div class="tooltip" v-if="focusedField === 'email'">
+            Пример: name@example.com
+          </div>
         </div>
+
         <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-lock-alt"></i></span>
           <input
             :type="showRegisterPassword ? 'text' : 'password'"
             v-model="registerForm.password"
             required
+            :class="{ invalid: invalidFields.includes('password') }"
             @focus="focusedField = 'password'"
             @blur="focusedField = ''"
           >
@@ -118,12 +123,14 @@
             Мин. 8 символов, заглавная и строчная буквы, цифра, спецсимвол
           </div>
         </div>
+
         <div class="input-box tooltip-container">
           <span class="icon"><i class="bx bx-lock-alt"></i></span>
           <input
             :type="showConfirmPassword ? 'text' : 'password'"
             v-model="registerForm.confirmPassword"
             required
+            :class="{ invalid: invalidFields.includes('confirmPassword') }"
             @focus="focusedField = 'confirmPassword'"
             @blur="focusedField = ''"
           >
@@ -135,6 +142,7 @@
             Пароли должны совпадать
           </div>
         </div>
+
         <button type="submit" class="btn">Зарегистрироваться</button>
         <p v-if="registerError" class="error">{{ registerError }}</p>
         <div class="social-login">
@@ -169,6 +177,7 @@ export default {
       showLoginPassword: false,
       showRegisterPassword: false,
       showConfirmPassword: false,
+      invalidFields: [],
       loginError: '',
       registerError: '',
       focusedField: '',
@@ -231,6 +240,7 @@ export default {
     },
     async handleRegister() {
       this.registerError = '';
+      this.invalidFields = [];
 
       const nameRegex = /^[А-ЯЁ][а-яё]+$/u;
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -242,35 +252,27 @@ export default {
       const password = this.registerForm.password;
       const confirm = this.registerForm.confirmPassword;
 
-      // Проверки имени и фамилии
       if (!nameRegex.test(first) || first.length < 2 || first.length > 30) {
-        this.registerError = "Имя должно начинаться с заглавной буквы, содержать только кириллицу и быть от 2 до 30 символов.";
-        return;
+        this.invalidFields.push('firstName');
       }
-
       if (!nameRegex.test(last) || last.length < 2 || last.length > 30) {
-        this.registerError = "Фамилия должна начинаться с заглавной буквы, содержать только кириллицу и быть от 2 до 30 символов.";
-        return;
+        this.invalidFields.push('lastName');
       }
-
-      // Проверка email
       if (!emailRegex.test(email) || email.length > 100) {
-        this.registerError = "Введите корректный email (до 100 символов, только латиница и допустимые знаки).";
-        return;
+        this.invalidFields.push('email');
       }
-
-      // Проверка пароля
       if (!passwordRegex.test(password)) {
-        this.registerError = "Пароль должен содержать минимум 8 символов, заглавную и строчную буквы, цифру и спецсимвол.";
-        return;
+        this.invalidFields.push('password');
       }
-
       if (password !== confirm) {
-        this.registerError = "Пароли не совпадают.";
+        this.invalidFields.push('confirmPassword');
+      }
+
+      if (this.invalidFields.length > 0) {
+        this.registerError = "Неверно введённые данные";
         return;
       }
 
-      // Запрос на сервер
       try {
         const res = await fetch('http://localhost:8000/api/register', {
           method: 'POST',
@@ -632,8 +634,9 @@ export default {
 }
 
 .dark-theme .error {
-  background-color: rgba(255, 100, 100, 0.1);
-  color: #ff6b6b;
+  background-color: rgba(255, 0, 0, 0.15);
+  color: rgb(104, 0, 0);
+  border: 1px solid #700101;
 }
 
 .tooltip-container {
@@ -681,6 +684,14 @@ export default {
   background: #394038;
   color: #f3f8f1;
   border-color: #f3f8f1;
+}
+
+.input-box input.invalid {
+  border-bottom: 2px solid red !important;
+}
+
+.dark-theme .input-box input.invalid {
+  border-bottom: 2px solid #ff6b6b !important;
 }
 
 </style>
