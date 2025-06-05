@@ -8,6 +8,7 @@
           v-model="userData.name"
           placeholder="Имя"
         >
+        <p v-if="validationError" class="error">{{ validationError }}</p>
       </div>
       <div class="form-group">
         <label>Email</label>
@@ -43,7 +44,8 @@ export default {
         name: this.user.name || '',
         email: this.user.email || ''
       },
-      saveMessage: ''
+      saveMessage: '',
+      validationError: ''
     }
   },
   watch: {
@@ -59,20 +61,25 @@ export default {
   },
   methods: {
     async saveProfile() {
+      this.validationError = '';
+      const name = this.userData.name.trim();
+
+      if (!this.isValidName(name)) {
+        this.validationError = "Введите имя в формате 'Фамилия Имя', с заглавных букв, только кириллица, 5–50 символов.";
+        return;
+      }
+
       const userData = JSON.parse(sessionStorage.getItem('user'));
       try {
         const res = await fetch(`http://localhost:8000/api/user/${userData.user_id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: this.userData.name
-          })
+          body: JSON.stringify({ name })
         });
         const data = await res.json();
         if (data.success) {
           this.saveMessage = "Изменения профиля сохранены";
-          // Обновим user в sessionStorage
-          userData.name = this.userData.name;
+          userData.name = name;
           sessionStorage.setItem('user', JSON.stringify(userData));
           this.$emit('profile-saved');
         } else {
@@ -82,7 +89,11 @@ export default {
         this.saveMessage = "Ошибка соединения с сервером";
       }
       setTimeout(() => { this.saveMessage = ""; }, 2000);
-    }
+    },
+    isValidName(name) {
+      const regex = /^[А-ЯЁ][а-яё]+ [А-ЯЁ][а-яё]+$/u;
+      return regex.test(name.trim()) && name.length >= 5 && name.length <= 50;
+    },
   }
 }
 </script>
@@ -189,4 +200,20 @@ export default {
   .dark-theme .save-btn:hover {
     background: #e0e8dd;
   }
+
+  .error {
+  color: red;
+  margin-top: 10px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 6px 12px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.dark-theme .error {
+  color: #ff6b6b;
+  background-color: rgba(255, 100, 100, 0.1);
+}
+
   </style>

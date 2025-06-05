@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from db import get_connection
 from pydantic import BaseModel
 
@@ -22,7 +22,7 @@ def register(request: RegisterRequest):
         if cursor.fetchone():
             cursor.close()
             conn.close()
-            return {"success": False, "message": "Пользователь с таким email уже существует"}
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Пользователь с таким email уже существует")
         cursor.execute(
             'INSERT INTO "user" (name, email, password) VALUES (%s, %s, %s) RETURNING user_id',
             (f"{request.first_name} {request.last_name}", request.email, request.password)
@@ -32,6 +32,8 @@ def register(request: RegisterRequest):
         cursor.close()
         conn.close()
         return {"success": True, "user_id": user_id}
+    except HTTPException:
+        raise
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Ошибка сервера")

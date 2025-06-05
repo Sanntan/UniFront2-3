@@ -173,33 +173,65 @@ export default {
       }
     },
     async handleRegister() {
-      // Простая валидация
-      if (
-        !this.registerForm.firstName.trim() ||
-        !this.registerForm.lastName.trim() ||
-        !this.registerForm.email.trim() ||
-        !this.registerForm.password ||
-        this.registerForm.password !== this.registerForm.confirmPassword
-      ) {
-        this.registerError = "Проверьте корректность всех полей и совпадение паролей";
+      this.registerError = '';
+
+      const nameRegex = /^[А-ЯЁ][а-яё]+$/u;
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}$/;
+
+      const first = this.registerForm.firstName.trim();
+      const last = this.registerForm.lastName.trim();
+      const email = this.registerForm.email.trim();
+      const password = this.registerForm.password;
+      const confirm = this.registerForm.confirmPassword;
+
+      // Проверки имени и фамилии
+      if (!nameRegex.test(first) || first.length < 2 || first.length > 30) {
+        this.registerError = "Имя должно начинаться с заглавной буквы, содержать только кириллицу и быть от 2 до 30 символов.";
         return;
       }
+
+      if (!nameRegex.test(last) || last.length < 2 || last.length > 30) {
+        this.registerError = "Фамилия должна начинаться с заглавной буквы, содержать только кириллицу и быть от 2 до 30 символов.";
+        return;
+      }
+
+      // Проверка email
+      if (!emailRegex.test(email) || email.length > 100) {
+        this.registerError = "Введите корректный email (до 100 символов, только латиница и допустимые знаки).";
+        return;
+      }
+
+      // Проверка пароля
+      if (!passwordRegex.test(password)) {
+        this.registerError = "Пароль должен содержать минимум 8 символов, заглавную и строчную буквы, цифру и спецсимвол.";
+        return;
+      }
+
+      if (password !== confirm) {
+        this.registerError = "Пароли не совпадают.";
+        return;
+      }
+
+      // Запрос на сервер
       try {
         const res = await fetch('http://localhost:8000/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            first_name: this.registerForm.firstName,
-            last_name: this.registerForm.lastName,
-            email: this.registerForm.email,
-            password: this.registerForm.password
+            first_name: first,
+            last_name: last,
+            email: email,
+            password: password
           })
         });
+
         const data = await res.json();
-        if (data.success) {
+        if (res.status === 409) {
+          this.registerError = data.detail || 'Такой email уже зарегистрирован';
+        } else if (data.success) {
           this.$emit('close');
           alert('Успешная регистрация! Теперь вы можете войти.');
-          // this.toggleForm(); // если хочешь сразу показать форму логина
         } else {
           this.registerError = data.message || 'Ошибка регистрации';
         }
@@ -533,5 +565,19 @@ export default {
   background: #99aa8e;
 }
 
-.error { color: red; margin-top: 10px; }
+.error {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+  background-color: rgba(255, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: bold;
+}
+
+.dark-theme .error {
+  background-color: rgba(255, 100, 100, 0.1);
+  color: #ff6b6b;
+}
+
 </style>
