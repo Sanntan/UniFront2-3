@@ -1,3 +1,4 @@
+import bcrypt
 from fastapi import APIRouter, HTTPException, status
 from db import get_connection
 from pydantic import BaseModel
@@ -23,9 +24,13 @@ def register(request: RegisterRequest):
             cursor.close()
             conn.close()
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Пользователь с таким email уже существует")
+
+        # Хешируем пароль
+        hashed_password = bcrypt.hashpw(request.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
         cursor.execute(
             'INSERT INTO "user" (name, email, password) VALUES (%s, %s, %s) RETURNING user_id',
-            (f"{request.first_name} {request.last_name}", request.email, request.password)
+            (f"{request.first_name} {request.last_name}", request.email, hashed_password)
         )
         user_id = cursor.fetchone()[0]
         conn.commit()
