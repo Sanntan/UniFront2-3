@@ -18,13 +18,17 @@
       <button class="theme-toggle" @click="toggleTheme">
         <i :class="themeIcon"></i>
       </button>
-      <a href="#" 
-         class="nav-link" 
-         @click.prevent="navigateToCabinet"
-         :class="{ 'active': $route.path === '/cabinet' }">
+      <a 
+        href="#" 
+        class="nav-link" 
+        @click.prevent="navigateToCabinet"
+        :class="{ 'active': $route.path === '/cabinet' }">
         Личный кабинет
       </a>
-      <a class="nav-link " @click="handleAuthClick">
+      <a 
+        href="#" 
+        class="nav-link"
+        @click="handleAuthClick">
         {{ isAuthenticated ? 'Выйти' : 'Авторизация' }}
       </a>
     </nav>
@@ -40,7 +44,7 @@ export default {
   data() {
     return {
       isDarkTheme: false,
-      authKey: 0, // ключ для форс-обновления
+      authKey: 0,
     }
   },
   computed: {
@@ -64,6 +68,7 @@ export default {
       sessionStorage.removeItem('user');
       this.$router.push('/');
       window.dispatchEvent(new Event('auth-changed'));
+      window.location.href = '/';
     },
     toggleMobileMenu() {
       const nav = document.querySelector('.navigation');
@@ -82,19 +87,22 @@ export default {
       }
     },
     forceAuthUpdate() {
-      // Меняем ключ, чтобы компонент перерисовался
       this.authKey++;
+    },
+    checkTheme() {
+      this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
     }
   },
   created() {
-    // слушаем глобальное событие на логин
     window.addEventListener('auth-changed', this.forceAuthUpdate);
   },
   beforeUnmount() {
     window.removeEventListener('auth-changed', this.forceAuthUpdate);
   },
   mounted() {
-    this.isDarkTheme = document.documentElement.classList.contains('dark-theme');
+    this.checkTheme();
+    const observer = new MutationObserver(this.checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   },
 }
 </script>
