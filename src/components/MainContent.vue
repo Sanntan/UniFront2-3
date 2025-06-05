@@ -133,6 +133,7 @@ export default {
       isDarkTheme: false,
       showEmailPopup: false,
       hideEmailTimer: null,
+      abortController: null,
     };
   },
 
@@ -191,13 +192,18 @@ export default {
       return Math.ceil(this.allResults.length / this.pageSize) || 1;
     },
     clearFile() {
+      if (this.abortController) {
+        this.abortController.abort(); // Останавливаем активный запрос
+        this.abortController = null;
+      }
+
       this.fileName = '';
       this.allResults = [];
       this.currentPage = 1;
       this.showResults = false;
       this.progress = 0;
       this.isProcessing = false;
-      // Если нужно, очищаем value поля input:
+
       this.$nextTick(() => {
         const input = document.getElementById("file-upload");
         if (input) input.value = "";
@@ -220,6 +226,8 @@ export default {
       this.progress = 0;
       this.isProcessing = true;
 
+      this.abortController = new AbortController(); // создаём контроллер
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -232,18 +240,23 @@ export default {
       try {
         const response = await fetch("http://localhost:8000/find_similar", {
           method: "POST",
-          body: formData
+          body: formData,
+          signal: this.abortController.signal // передаём сигнал
         });
 
         if (!response.ok) throw new Error("Ошибка запроса");
 
         const data = await response.json();
-        this.allResults = data;      // сохраняем все карточки
-        this.currentPage = 1;        // сбрасываем страницу на первую
-        this.showResults = true;     // показываем блок с результатами
+        this.allResults = data;
+        this.currentPage = 1;
+        this.showResults = true;
       } catch (err) {
-        console.error("Ошибка при получении похожих статей:", err);
-        this.results = [];
+        if (err.name === "AbortError") {
+          console.log("Запрос отменён пользователем");
+        } else {
+          console.error("Ошибка при получении похожих статей:", err);
+          this.showSuccessToast("❌ Ошибка загрузки файла");
+        }
       } finally {
         clearInterval(interval);
         this.progress = 100;
