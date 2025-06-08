@@ -10,6 +10,8 @@ from favorites import router as favorites_router
 
 from change_password import router as password_router
 
+from fastapi.responses import HTMLResponse
+
 app = FastAPI()
 
 app.add_middleware(
@@ -26,3 +28,7 @@ app.include_router(register_router)
 app.include_router(similarity_router)
 app.include_router(favorites_router)
 app.include_router(password_router)
+
+@app.get("/", response_class=HTMLResponse)
+def read_root():
+    return "<h1>Добро пожаловать в API ResearchMate</h1><p>Перейдите на <a href='/docs'>/docs</a> чтобы увидеть документацию.</p>"
